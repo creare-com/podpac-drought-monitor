@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Drought-Monitor</title>
+        <meta charset="utf-8"/>
+        <script src="https://cdn.jsdelivr.net/npm/vega@5.4.0/build/vega.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vega-lite@3.3.0/build/vega-lite.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vega-embed@4.2.0/build/vega-embed.js"></script>
+        <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js'></script>
+        <style media="screen">
+            /* Add space between Vega-Embed links  */
+            .vega-actions a {
+                margin-right: 5px;
+            }
+        </style>
+    </head>
+    <body>
+        
+        <div id="controls" style="width:100%">
+            <h1>Drought-Monitor</h1>
+            &nbsp &nbsp &nbsp &nbsp<input type="number" name="lat" id="lat" min="-90" max="90" onchange="updatePlot()">
+            Latitude (WGS84)
+            &nbsp<input type="number" name="lon" id="lon" min="-180" max="180" onchange="updatePlot()">
+            Longitude (WGS84)
+            <input type="checkbox" name="axisType" id="axisType" value="SoilMoisture" onclick="updatePlot()">Y-Axis in Soil Moisture
+        </div>
+        <!-- Container for the visualization -->
+        <div id="vis" style="width:100%"></div>
+        <div id="message">
+        </div>
+        <div id="fcc-message">
+        This product uses the FCC Data API but is not endorsed or certified by the FCC.
+        </div>
+        
+
+        <script>
+            // Functions used throughout //
+
+            // Function that retrieves the data -- returns dummy data for now
+            function get_data(geolocation, rawData) {
+
+                // To retrieve the NDMI data we need the county fips code -- use the fcc's census api to get this from the lat/lon
+                var fips_request;
+                var fips_json = null;
+                var fips_code_county = null;
+                var rawNDMI = null;
+
+                var nowdate = new Date();
+                var offsetdate = new Date();
+                offsetdate.setMonth(Math.max(3, nowdate.getMonth() - 3)); 
+
+                var enddate = nowdate.toLocaleDateString();
+                var startdate = offsetdate.toLocaleDateString();
+
+                // Fetch the NDMI data
+                $.get('https://geo.fcc.gov/api/census/area', {
+                    lat: $('#lat')[0].value,
+                    lon: $('#lon')[0].value,
+                    format: 'json'
+                }, function(data) {
+                    fips_json = data;
+                    if (fips_json.results.length > 0){
+                        fips_code_county = fips_json.results[0].county_fips;
+                    } else { return; }
+
+                    // Get the NDMI data
+                    // example https://usdmdataservices.unl.edu/api/USStatistics/GetDroughtSeverityStatisticsByArea?aoi=us&startdate=1/1/2019&enddate=1/1/2020&statisticsType=1
+                    $.ajax({
+                        url: 'https://cors-anywhere.herokuapp.com/https://usdmdataservices.unl.edu/api/CountyStatistics/GetDroughtSeverityStatisticsByArea',
+                        type: 'GET',
+                        contentType: 'text/plain',
+                        xhrFields: {
+                            withCredentials: false
+                        },
+                        data: {
+                            aoi: fips_code_county,
+                            startdate: startdate,
+                            enddate: enddate,
+                            statisticsType: 1
+                        },
+                        accepts: 'json',
+                        success: function(data) {
+                            rawNDMI = data;
+                            // we'll need to get this through podpac for the dates in rawNDMI
+                            cats = {
+                                d5: 0.0,
+                                d4: 0.11,
+                                d3: 0.22,
+                                d2: 0.33,
+                                d1: 0.40,
+                                d0: 0.45,
+                                dn: 0.5
+                            }
+                            for (var i = 0; i < rawNDMI.length; i++) {
+                                var tot_area = parseFloat(rawNDMI[i]["None"].replace(',', ''));
+                                var mean_cat = 5.5 * tot_area;
+                                for (var j = 0; j < 5; j++) {
+                                    var area = parseFloat(rawNDMI[i]["D" + j].replace(',', ''));
+                                    tot_area = tot_area + area;
+                                    mean_cat = mean_cat + (4.5 - j) * area;
+                                }
+                                var locNDMI = mean_cat / tot_area;
+                                var entry = {
+                                    date: rawNDMI[i].MapDate,
+                                    NDMI: locNDMI
+                                }
+                                $.extend(entry, cats);
+                                rawData.push(entry);
+                            }
+                            updatePlot();
+                        }
+                    });
+                });
+                        
+                $.extend(rawData, [{
+                    date1: '2019/04/01',
+                    moisture: 0.1,
+                    d5: 0.0,
+                    d4: 0.11,
+                    d3: 0.22,
+                    d2: 0.33,
+                    d1: 0.40,
+                    d0: 0.45,
+                    dn: 0.5
+                }, {
+                    date1: '2019/04/07',
+                    moisture: 0.05,
+                    d5: 0.0,
+                    d4: 0.11,
+                    d3: 0.22,
+                    d2: 0.33,
+                    d1: 0.40,
+                    d0: 0.45,
+                    dn: 0.5
+                }, {
+                    date1: '2019/04/14',
+                    moisture: 0.15,
+                    d5: 0.0,
+                    d4: 0.11,
+                    d3: 0.22,
+                    d2: 0.33,
+                    d1: 0.40,
+                    d0: 0.45,
+                    dn: 0.5
+                }, {
+                    date1: '2019/04/21',
+                    moisture: 0.5,
+                    d5: 0.0,
+                    d4: 0.11,
+                    d3: 0.22,
+                    d2: 0.33,
+                    d1: 0.40,
+                    d0: 0.45,
+                    dn: 0.5
+                }, {
+                    date1: '2019/05/01',
+                    moisture: 0.4,
+                    d5: 0.0,
+                    d4: 0.11,
+                    d3: 0.22,
+                    d2: 0.33,
+                    d1: 0.40,
+                    d0: 0.45,
+                    dn: 0.5
+                }, {
+                    date1: '2019/05/07',
+                    moisture: 0.3,
+                    d5: 0.0,
+                    d4: 0.11,
+                    d3: 0.22,
+                    d2: 0.33,
+                    d1: 0.40,
+                    d0: 0.45,
+                    dn: 0.5
+                }, {
+                    date1: '2019/05/14',
+                    moisture: 0.2,
+                    d5: 0.0,
+                    d4: 0.11,
+                    d3: 0.22,
+                    d2: 0.33,
+                    d1: 0.40,
+                    d0: 0.45,
+                    dn: 0.5
+                }, {
+                    date1: '2019/05/21',
+                    moisture: 0.1,
+                    d5: 0.0,
+                    d4: 0.11,
+                    d3: 0.22,
+                    d2: 0.33,
+                    d1: 0.40,
+                    d0: 0.45,
+                    dn: 0.5
+                }, {
+                    date1: '2019/06/01',
+                    moisture: 0.5,
+                    d5: 0.0,
+                    d4: 0.11,
+                    d3: 0.22,
+                    d2: 0.33,
+                    d1: 0.40,
+                    d0: 0.45,
+                    dn: 0.5
+                }, {
+                    date1: '2019/06/07',
+                    moisture: 0.4,
+                    d5: 0.0,
+                    d4: 0.11,
+                    d3: 0.22,
+                    d2: 0.33,
+                    d1: 0.40,
+                    d0: 0.45,
+                    dn: 0.5
+                }, {
+                    date1: '2019/06/14',
+                    moisture: 0.3,
+                    d5: 0.0,
+                    d4: 0.11,
+                    d3: 0.22,
+                    d2: 0.33,
+                    d1: 0.40,
+                    d0: 0.45,
+                    dn: 0.5
+                }, {
+                    date1: '2019/06/21',
+                    moisture: 0.2,
+                    d5: 0.0,
+                    d4: 0.11,
+                    d3: 0.22,
+                    d2: 0.33,
+                    d1: 0.40,
+                    d0: 0.45,
+                    dn: 0.5
+                }]);
+                return rawData;
+            }
+
+            // Function that converts soil moisture to NDMI based on the drought categories
+            function soilmoistureToNDMI(data) {
+                outData = {
+                    "values": []
+                }
+                for (var i = 0; i < data.length; i++) {
+                    outData.values.push({});
+                    var sm = 0;
+                    var ndmi = 0;
+                    if (data[i].date1 !== undefined) {
+                        if (data[i].moisture < data[i].d4) {
+                            sm = (data[i].moisture - data[i].d5) / (data[i].d4 - data[i].d5) + 0;
+                        } else if (data[i].moisture < data[i].d3) {
+                            sm = (data[i].moisture - data[i].d4) / (data[i].d3 - data[i].d4) + 1;
+                        } else if (data[i].moisture < data[i].d2) {
+                            sm = (data[i].moisture - data[i].d3) / (data[i].d2 - data[i].d3) + 2;
+                        } else if (data[i].moisture < data[i].d1) {
+                            sm = (data[i].moisture - data[i].d2) / (data[i].d1 - data[i].d2) + 3;
+                        } else if (data[i].moisture < data[i].d0) {
+                            sm = (data[i].moisture - data[i].d1) / (data[i].d0 - data[i].d1) + 4;
+                        } else {
+                            sm = (data[i].moisture - data[i].d0) / (data[i].dn - data[i].d0) + 5;
+                        }
+                        outData.values[i].moisture = sm;
+                        outData.values[i].d5 = 0;
+                        outData.values[i].d4 = 1;
+                        outData.values[i].d3 = 2;
+                        outData.values[i].d2 = 3;
+                        outData.values[i].d1 = 4;
+                        outData.values[i].d0 = 5;
+                        outData.values[i].dn = 6;
+                        outData.values[i].date1 = data[i].date1;
+                    }
+                    if (data[i].date !== undefined) {
+                        // No conversion needed
+                        outData.values[i].NDMI = data[i].NDMI;
+                        outData.values[i].date = data[i].date.slice(0, 4) + '/' + data[i].date.slice(4, 6) + '/' + data[i].date.slice(6,);
+                    }
+                }
+                return outData;
+            }
+
+            // Function that converts NDMI to soil moisture based on the drought categories
+            function NDMIToSoilmoisture(data) {
+                outData = {
+                    "values": []
+                }
+                for (var i = 0; i < data.length; i++) {
+                    outData.values.push({});
+                    var sm = 0;
+                    var ndmi = 0;
+                    if (data[i].date !== undefined) {
+                        if (data[i].moisture < 1) {
+                            NDMI = (data[i].NDMI - 0) * (data[i].d4 - data[i].d5) + data[i].d5;
+                        } else if (data[i].NDMI < 2) {
+                            NDMI = (data[i].NDMI - 1) * (data[i].d3 - data[i].d4) + data[i].d4;
+                        } else if (data[i].NDMI < 3) {
+                            NDMI = (data[i].NDMI - 2) * (data[i].d2 - data[i].d3) + data[i].d3;
+                        } else if (data[i].NDMI < 4) {
+                            NDMI = (data[i].NDMI - 3) * (data[i].d1 - data[i].d2) + data[i].d2;
+                        } else if (data[i].NDMI < 5) {
+                            NDMI = (data[i].NDMI - 4) * (data[i].d0 - data[i].d1) + data[i].d1;
+                        } else {
+                            NDMI = (data[i].NDMI - 5) * (data[i].dn - data[i].d0) + data[i].d0;
+                        }
+                        outData.values[i].NDMI = NDMI;
+                        outData.values[i].date = data[i].date.slice(0, 4) + '/' + data[i].date.slice(4, 6) + '/' + data[i].date.slice(6);
+                    }
+                    if (data[i].date1 !== undefined) {
+                        // No conversion needed
+                        outData.values[i].moisture = data[i].moisture;
+                        outData.values[i].d5 = data[i].d5;
+                        outData.values[i].d4 = data[i].d4;
+                        outData.values[i].d3 = data[i].d3;
+                        outData.values[i].d2 = data[i].d2;
+                        outData.values[i].d1 = data[i].d1;
+                        outData.values[i].d0 = data[i].d0;
+                        outData.values[i].dn = data[i].dn;
+                        outData.values[i].date1 = data[i].date1;
+                    }
+                }
+                return outData;
+            }
+
+            function get_geolocation() {
+                new_geolocation = [$('#lat')[0].value, $('#lon')[0].value]
+                if (new_geolocation[0] !== '' & new_geolocation[1] !== "") {
+                    geolocation = new_geolocation;
+                    return;
+                }
+
+                function setPosition(position) {
+                    $('#lat')[0].value = position.coords.latitude;
+                    $('#lon')[0].value = position.coords.longitude;
+                    geolocation = [position.coords.latitude, position.coords.longitude];
+                    updatePlot();
+                }
+                function showError(error) {
+                    x = $('#message')[0];
+                    geolocation = undefined;
+                    switch (error.code) {
+                    case error.PERMISSION_DENIED:
+                        x.innerHTML = "User denied the request for Geolocation."
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        x.innerHTML = "Location information is unavailable."
+                        break;
+                    case error.TIMEOUT:
+                        x.innerHTML = "The request to get user location timed out."
+                        break;
+                    case error.UNKNOWN_ERROR:
+                        x.innerHTML = "An unknown error occurred."
+                        break;
+                    }
+                }
+
+                if (navigator.geolocation){
+                            if (geolocation === null){
+                                navigator.geolocation.getCurrentPosition(setPosition, showError);
+                            }
+                } else {
+                    $('#message')[0].innerHTML = "Geolocation is not supported by this browser. Please enter location manually.";
+                    geolocation = undefined;
+                }
+            }
+
+            // Define the colors for the legend
+            var legend = {
+                "DN": "#FFFFFF",
+                "D0": "#FFFF00",
+                "D1": "#FCD37F",
+                "D2": "#FFAA00",
+                "D3": "#E60000",
+                "D4": "#730000"
+            }
+
+            // Updates the plot data depending on user selections
+            function updatePlot() {
+                get_geolocation();
+
+                if (geolocation === null | geolocation === undefined) {
+                    return;
+                }
+                if ((rawData === null) | (old_geolocation[0] != geolocation[0]) | (old_geolocation[1] != geolocation[1])) {
+                    rawData = [];
+                    rawData = get_data(geolocation, rawData);
+                    old_geolocation = geolocation;
+                }
+                var data = null;
+                var domain = null;
+                var axis = {
+                    "labelFontSize": 24,
+                    "titleFontSize": 24,
+                }
+                if ($('#axisType')[0].checked === false) {
+                    data = soilmoistureToNDMI(rawData);
+                    domain = [0, 6];
+                    axis.title = "Drought Category",
+                    axis.tickCount = 0
+
+                } else {
+                    data = NDMIToSoilmoisture(rawData);
+                    domain = [Math.min.apply(Math, rawData.map(function(o) {
+                        if (o.moisture === undefined) {
+                            return 1;
+                        } else {
+                            return o.moisture;
+                        }
+                    })), Math.max.apply(Math, rawData.map(function(o) {
+                        if (o.moisture == undefined) {
+                            return 0;
+                        } else {
+                            return o.moisture;
+                        }
+                    }))];
+                    axis.title = "Soil Moisture",
+                    axis.tickCount = 5
+                }
+                var vlSpec = makeVLSpec(data, domain, axis);
+                var margin = $('body').css('margin').replace('px','');
+                if ( margin === "") { 
+                        margin = 0;
+                } else {
+                        margin = parseInt(margin);
+                }
+                vlSpec["height"] = $(window).height() - $('#controls').height() - $('#message').height() - $('#fcc-message').height() - margin * 2 - 16;
+
+                // Embed the visualization in the container with id `vis`
+                vegaEmbed('#vis', vlSpec);
+            }
+
+            // Makes the JSON spec for the Vega-lite plot
+            function makeVLSpec(data, domain, axis) {
+                var vlSpec = {
+                    $schema: 'https://vega.github.io/schema/vega-lite/v3.json',
+                    "width": $('#vis').width(),
+                    "height": $(window).height() - $('#controls').height() - $('#message').height(),
+                    "autosize": {
+                        "type": "fit",
+                        "contains": "padding"
+                    },
+                    "data": data,
+
+                    "layer": [// Each Entry in the Layers define a plot
+                    {
+                        // Cat 4 drought area layer
+                        "mark": {
+                            "opacity": 1.0,
+                            "type": "area",
+                            "color": legend["D4"]
+                        },
+                        "encoding": {
+                            "y": {
+                                "field": "d4",
+                                "scale": {
+                                    "domain": domain
+                                },
+                                "type": "quantitative",
+                                "axis": axis,
+                            },
+                            "y2": {
+                                "field": "d5",
+                                "type": "quantitative"
+                            },
+                            "x": {
+                                // This defines the x-axis and label
+                                "field": "date1",
+                                "type": "temporal",
+                                "axis": {
+                                    "title": "",
+                                },
+                                "scale": {
+                                    "domain": {
+                                        "selection": "brush"
+                                    }
+                                }
+                            },
+                            "tooltip": null
+                        }
+                    }, {
+                        // Cat 3 drought area layer
+                        "mark": {
+                            "opacity": 1.0,
+                            "type": "area",
+                            "color": legend["D3"]
+                        },
+                        "encoding": {
+                            "y": {
+                                "field": "d3",
+                                "scale": {
+                                    "domain": domain
+                                },
+                                "type": "quantitative",
+                                "axis": {
+                                    "title": "",
+                                    "tickCount": axis.tickCount
+                                }
+                            },
+                            "y2": {
+                                "field": "d4",
+                                "type": "quantitative"
+                            },
+                            "x": {
+                                // This defines the x-axis and label
+                                "field": "date1",
+                                "type": "temporal",
+                                "axis": {
+                                    "title": "",
+                                },
+                                "scale": {
+                                    "domain": {
+                                        "selection": "brush"
+                                    }
+                                }
+                            },
+                            "tooltip": null
+                        }
+                    }, {
+                        // Cat 2 drought area layer
+                        "mark": {
+                            "opacity": 1.0,
+                            "type": "area",
+                            "color": legend["D2"]
+                        },
+                        "encoding": {
+                            "y": {
+                                "field": "d2",
+                                "scale": {
+                                    "domain": domain
+                                },
+                                "type": "quantitative",
+                                "axis": {
+                                    "title": "",
+                                    "tickCount": axis.tickCount
+                                }
+                            },
+                            "y2": {
+                                "field": "d3",
+                                "type": "quantitative"
+                            },
+                            "x": {
+                                // This defines the x-axis and label
+                                "field": "date1",
+                                "type": "temporal",
+                                "axis": {
+                                    "title": "",
+                                },
+                                "scale": {
+                                    "domain": {
+                                        "selection": "brush"
+                                    }
+                                }
+                            },
+                            "tooltip": null
+                        }
+                    }, {
+                        // Cat 1 drought area layer
+                        "mark": {
+                            "opacity": 1.0,
+                            "type": "area",
+                            "color": legend["D1"]
+                        },
+                        "encoding": {
+                            "y": {
+                                "field": "d1",
+                                "scale": {
+                                    "domain": domain
+                                },
+                                "type": "quantitative",
+                                "axis": {
+                                    "title": "",
+                                    "tickCount": axis.tickCount
+                                }
+                            },
+                            "y2": {
+                                "field": "d2",
+                                "type": "quantitative"
+                            },
+                            "x": {
+                                // This defines the x-axis and label
+                                "field": "date1",
+                                "type": "temporal",
+                                "axis": {
+                                    "title": "",
+                                },
+                                "scale": {
+                                    "domain": {
+                                        "selection": "brush"
+                                    }
+                                }
+                            },
+                            "tooltip": null
+                        }
+                    }, {
+                        // Cat 0 drought area layer
+                        "mark": {
+                            "opacity": 1.0,
+                            "type": "area",
+                            "color": legend["D0"]
+                        },
+                        "encoding": {
+                            "y": {
+                                "field": "d0",
+                                "scale": {
+                                    "domain": domain
+                                },
+                                "type": "quantitative",
+                                "axis": {
+                                    "title": "",
+                                    "tickCount": axis.tickCount
+                                }
+                            },
+                            "y2": {
+                                "field": "d1",
+                                "type": "quantitative"
+                            },
+                            "x": {
+                                // This defines the x-axis and label
+                                "field": "date1",
+                                "type": "temporal",
+                                "axis": {
+                                    "title": "",
+                                },
+                                "scale": {
+                                    "domain": {
+                                        "selection": "brush"
+                                    }
+                                }
+                            },
+                            "tooltip": null
+                        }
+                    }, {
+                        // Not in drought area layer
+                        "mark": {
+                            "opacity": 1.0,
+                            "type": "area",
+                            "color": legend["DN"]
+                        },
+                        "encoding": {
+                            "y": {
+                                "field": "d0",
+                                "scale": {
+                                    "domain": domain
+                                },
+                                "type": "quantitative",
+                                "axis": {
+                                    "title": "",
+                                    "tickCount": axis.tickCount
+                                }
+                            },
+                            "y2": {
+                                "field": "dn",
+                                "type": "quantitative"
+                            },
+                            "x": {
+                                // This defines the x-axis and label
+                                "field": "date1",
+                                "type": "temporal",
+                                "axis": {
+                                    "title": "",
+                                },
+                                "scale": {
+                                    "domain": {
+                                        "selection": "brush"
+                                    }
+                                }
+                            },
+                            "tooltip": null
+                        }
+                    }, {
+                        // NDMI Line
+                        "mark": {
+                            "type": "line",
+                            "color": "#000000",
+                            "opacity": 1.0,
+                            "strokeDash": [1, 10],
+                            "point": {
+                                "type": "circle",
+                                "size": 500,
+                                "color": "#000000",
+                                "opacity": 1.0
+                            }
+                        },
+                        "encoding": {
+                            "y": {
+                                "field": "NDMI",
+                                "scale": {
+                                    "domain": domain
+                                },
+                                "type": "quantitative",
+                                "axis": {
+                                    "title": "",
+                                    "tickCount": axis.tickCount
+                                }
+                            },
+                            "x": {
+                                // This defines the x-axis and label
+                                "field": "date",
+                                "type": "temporal",
+                                "axis": {
+                                    "title": "Date",
+                                    "labelFontSize": 24,
+                                    "titleFontSize": 24,
+                                    "format": "%m/%d/%y",
+                                    "labelAngle": -60,
+                                },
+                                "scale": {
+                                    "domain": {
+                                        "selection": "brush"
+                                    }
+                                }
+                            }
+                        }
+                    }, {
+                        // SMAP line
+                        "mark": {
+                            "type": "line",
+                            "color": "#BB9999",
+                            "size": "5",
+                            "point": {
+                                "type": "square",
+                                "color": "#BB9999",
+                                "size": "200"
+                            }
+                        },
+                        "selection": {
+                            // SELECTION IS HERE
+                            "brush": {
+                                "type": "interval",
+                                "bind": "scales",
+                                "encodings": ["x"]
+                            }
+                        },
+                        "encoding": {
+                            "y": {
+                                "scale": {
+                                    "domain": domain
+                                },
+                                "field": "moisture",
+                                "type": "quantitative",
+                            },
+                            "x": {
+                                // This defines the x-axis and label
+                                "field": "date1",
+                                "type": "temporal",
+                                "axis": {
+                                    "title": "",
+                                },
+                                "scale": {
+                                    "domain": {
+                                        "selection": "brush"
+                                    }
+                                }
+                            }
+                        }
+                    }, ],
+                    //                 "resolve": {
+                    //                     "scale": {
+                    //                         "y": "independent"
+                    //                     }
+                    //                 }
+                };
+                return vlSpec;
+            }
+        </script>
+        <script>
+            // First time run functions
+            var geolocation = null;
+            var old_geolocation = [null, null]; 
+            var rawData = null;
+            updatePlot();
+        </script>
+    </body>
+</html>
