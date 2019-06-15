@@ -29,11 +29,15 @@
         
         <div id="controls" style="width:100%;">
             <h1>Drought-Monitor</h1>
-            &nbsp &nbsp &nbsp &nbsp<input type="number" name="lat" id="lat" min="-90" max="90" onchange="updatePlot()">
+            &nbsp &nbsp &nbsp &nbsp<input type="number" name="lat" id="lat" min="-90" max="90" onchange="updatePlot()" />
             Latitude (WGS84)
-            &nbsp<input type="number" name="lon" id="lon" min="-180" max="180" onchange="updatePlot()">
+            &nbsp<input type="number" name="lon" id="lon" min="-180" max="180" onchange="updatePlot()" />
             Longitude (WGS84)
-            <input type="checkbox" name="axisType" id="axisType" value="SoilMoisture" onclick="updatePlot()">Y-Axis in Soil Moisture
+            <select name="axisType" id="axisType" onchange="updatePlot()">
+                <option value="NDMI">Time NDMI</option>
+                <option value="SM">Time Soil Moisture</option>
+                <option value="MAP">Current Map</option>
+            </select>
         </div>
         <!-- Container for the visualization -->
         <div id="vis" style="width:100%"></div>
@@ -352,6 +356,7 @@
                     switch (error.code) {
                     case error.PERMISSION_DENIED:
                         x.innerHTML = "User denied the request for Geolocation."
+                        $("#axisType")[0].value = "MAP"
                         break;
                     case error.POSITION_UNAVAILABLE:
                         x.innerHTML = "Location information is unavailable."
@@ -425,13 +430,15 @@
                     "labelFontSize": 24,
                     "titleFontSize": 24,
                 }
-                if ($('#axisType')[0].checked === false) {
+                if ($('#axisType')[0].value === "NDMI") {
                     data = soilmoistureToNDMI(rawData);
                     domain = [0, 6];
-                    axis.title = "Drought Category",
-                    axis.tickCount = 0
+                    axis.title = "Drought Category";
+                    axis.tickCount = 0;
+                    $("#vis").show();
+                    $("#map").hide();
 
-                } else {
+                } else if ($('#axisType')[0].value === "SM")  {
                     data = NDMIToSoilmoisture(rawData);
                     domain = [Math.min.apply(Math, rawData.map(function(o) {
                         if (o.moisture === undefined) {
@@ -446,8 +453,14 @@
                             return o.moisture;
                         }
                     }))];
-                    axis.title = "Soil Moisture",
-                    axis.tickCount = 5
+                    axis.title = "Soil Moisture";
+                    axis.tickCount = 5;
+                    $("#vis").show();
+                    $("#map").hide();
+
+                } else if ($('#axisType')[0].value === "MAP") {
+                    $("#vis").hide();
+                    $("#map").show();
                 }
                 var vlSpec = makeVLSpec(data, domain, axis);
 
