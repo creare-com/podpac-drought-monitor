@@ -411,7 +411,13 @@
                 if (marker !== null) {
                     marker.removeFrom(map);
                 }
-                marker = L.marker(geolocation).addTo(map);
+                marker = L.marker(geolocation, {draggable: true}).addTo(map);
+                marker.on('dragend', function(){
+                    var coords = marker.getLatLng();
+                    $("#lat")[0].value = coords['lat']; 
+                    $("#lon")[0].value = coords['lng']; 
+                    updatePlot();
+                })
 
                 var data = null;
                 var domain = null;
@@ -812,6 +818,20 @@
             // Initial leaflet MAP
             var map = L.map('map', {center: [42, -100.0], zoom: 4, layers: [OpenStreetMap_Mapnik]});
             L.control.layers(baseMaps, overlayMaps).addTo(map);  
+
+            // Set up listeners etc. to handle specification for the markers
+            map.on('click', function(e) {
+                    if (geolocation !== null & geolocation !== undefined) {
+                    return;
+                }
+                var coords = e.latlng;
+                $("#lat")[0].value = coords['lat'];
+                $("#lon")[0].value = coords['lng']; 
+                updatePlot();
+
+            })
+
+            // Update the line plot
             updatePlot();
         </script>
     </body>
