@@ -3,20 +3,31 @@
     <head>
         <title>Drought-Monitor</title>
         <meta charset="utf-8"/>
+        <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js'></script>
+
         <script src="https://cdn.jsdelivr.net/npm/vega@5.4.0/build/vega.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/vega-lite@3.3.0/build/vega-lite.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/vega-embed@4.2.0/build/vega-embed.js"></script>
-        <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js'></script>
+
         <style media="screen">
             /* Add space between Vega-Embed links  */
             .vega-actions a {
                 margin-right: 5px;
             }
         </style>
+
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css"
+            integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+            crossorigin=""/>
+          <!-- Make sure you put this AFTER Leaflet's CSS -->
+        <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"
+            integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og=="
+            crossorigin=""></script>
+
     </head>
     <body>
         
-        <div id="controls" style="width:100%">
+        <div id="controls" style="width:100%;">
             <h1>Drought-Monitor</h1>
             &nbsp &nbsp &nbsp &nbsp<input type="number" name="lat" id="lat" min="-90" max="90" onchange="updatePlot()">
             Latitude (WGS84)
@@ -26,6 +37,8 @@
         </div>
         <!-- Container for the visualization -->
         <div id="vis" style="width:100%"></div>
+        <!-- Container for the slippy map -->
+        <div id="map" style="width:100%"></div>
         <div id="message">
         </div>
         <div id="fcc-message">
@@ -372,6 +385,17 @@
                 "D4": "#730000"
             }
 
+            // Get the height for the map and plot elements
+            function get_height(){
+                var margin = $('body').css('margin').replace('px','');
+                if ( margin === "") { 
+                        margin = 0;
+                } else {
+                        margin = parseInt(margin);
+                }
+                return $(window).height() - $('#controls').height() - $('#message').height() - $('#fcc-message').height() - margin * 2 - 16;
+            }
+
             // Updates the plot data depending on user selections
             function updatePlot() {
                 get_geolocation();
@@ -384,6 +408,11 @@
                     rawData = get_data(geolocation, rawData);
                     old_geolocation = geolocation;
                 }
+                if (marker !== null) {
+                    marker.removeFrom(map);
+                }
+                marker = L.marker(geolocation).addTo(map);
+
                 var data = null;
                 var domain = null;
                 var axis = {
@@ -415,13 +444,8 @@
                     axis.tickCount = 5
                 }
                 var vlSpec = makeVLSpec(data, domain, axis);
-                var margin = $('body').css('margin').replace('px','');
-                if ( margin === "") { 
-                        margin = 0;
-                } else {
-                        margin = parseInt(margin);
-                }
-                vlSpec["height"] = $(window).height() - $('#controls').height() - $('#message').height() - $('#fcc-message').height() - margin * 2 - 16;
+
+                vlSpec["height"] = get_height();
 
                 // Embed the visualization in the container with id `vis`
                 vegaEmbed('#vis', vlSpec);
@@ -766,6 +790,28 @@
             var geolocation = null;
             var old_geolocation = [null, null]; 
             var rawData = null;
+            var marker = null;
+//             $("#vis").css('display', 'none');
+            $("#map").css("height", get_height());
+
+            // Create Leaflet Layers
+            var OpenStreetMap_Mapnik = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+	                       maxZoom: 19,
+	                       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                });
+            var DroughtWMSOptions = {layers: "usdm_current",
+                                     transparent: true,
+                                     transparency: true,
+                                     opacity: 0.5, 
+                                     format: 'image/png'};
+            var DroughtWMS = L.tileLayer.wms("http://ndmc-001.unl.edu:8080/cgi-bin/mapserv.exe?map=/ms4w/apps/usdm/service/usdm_current_wms.map&", DroughtWMSOptions);
+
+            var baseMaps = {"osm": OpenStreetMap_Mapnik};
+            var overlayMaps = {"NDMI": DroughtWMS};
+
+            // Initial leaflet MAP
+            var map = L.map('map', {center: [42, -100.0], zoom: 4, layers: [OpenStreetMap_Mapnik]});
+            L.control.layers(baseMaps, overlayMaps).addTo(map);  
             updatePlot();
         </script>
     </body>
