@@ -3,36 +3,36 @@
     <head>
         <title>Drought-Monitor</title>
         <meta charset="utf-8"/>
+        <script type="module">
+            
+        import * as hdf5 from '../jsfive/index.js';
+        window.hdf5 = hdf5;
+        
+        </script>
         <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js'></script>
-
         <script src="https://cdn.jsdelivr.net/npm/vega@5.4.0/build/vega.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/vega-lite@3.3.0/build/vega-lite.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/vega-embed@4.2.0/build/vega-embed.js"></script>
-
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/spark-md5/3.0.0/spark-md5.min.js"></script>
+        <script src="https://sdk.amazonaws.com/js/aws-sdk-2.283.1.min.js"></script>
         <style media="screen">
             /* Add space between Vega-Embed links  */
             .vega-actions a {
                 margin-right: 5px;
             }
         </style>
-
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css"
-            integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
-            crossorigin=""/>
-          <!-- Make sure you put this AFTER Leaflet's CSS -->
-        <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"
-            integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og=="
-            crossorigin=""></script>
-
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin=""/>
+        <!-- Make sure you put this AFTER Leaflet's CSS -->
+        <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js" integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og==" crossorigin=""></script>
     </head>
     <body>
-        
         <div id="controls" style="width:100%;">
             <h1>Drought-Monitor</h1>
-            &nbsp &nbsp &nbsp &nbsp<input type="number" name="lat" id="lat" min="-90" max="90" onchange="updatePlot()" />
+            &nbsp &nbsp &nbsp &nbsp<input type="number" name="lat" id="lat" min="-90" max="90" onchange="updatePlot()"/>
             Latitude (WGS84)
-            &nbsp<input type="number" name="lon" id="lon" min="-180" max="180" onchange="updatePlot()" />
+            &nbsp<input type="number" name="lon" id="lon" min="-180" max="180" onchange="updatePlot()"/>
             Longitude (WGS84)
+            
             <select name="axisType" id="axisType" onchange="updatePlot()">
                 <option value="NDMI">Time NDMI</option>
                 <option value="SM">Time Soil Moisture</option>
@@ -43,13 +43,9 @@
         <div id="vis" style="width:100%"></div>
         <!-- Container for the slippy map -->
         <div id="map" style="width:100%"></div>
-        <div id="message">
+        <div id="message"></div>
+        <div id="fcc-message">This product uses the FCC Data API but is not endorsed or certified by the FCC.
         </div>
-        <div id="fcc-message">
-        This product uses the FCC Data API but is not endorsed or certified by the FCC.
-        </div>
-        
-
         <script>
             // Functions used throughout //
 
@@ -64,10 +60,36 @@
 
                 var nowdate = new Date();
                 var offsetdate = new Date();
-                offsetdate.setMonth(Math.max(3, nowdate.getMonth() - 3)); 
+                offsetdate.setMonth(Math.max(0, nowdate.getMonth() - 3));
 
                 var enddate = nowdate.toLocaleDateString();
                 var startdate = offsetdate.toLocaleDateString();
+
+                // Fill the coordinates template
+                if (coordsjson !== null) {
+                    for (let i = 0; i < coordsjson.coords.length; i++) {
+                        if (coordsjson.coords[i].name == "lat") {
+                            coordsjson.coords[i].values = [parseFloat(geolocation[0])];
+                        } else if (coordsjson.coords[i].name == "lon") {
+                            coordsjson.coords[i].values = [parseFloat(geolocation[1])];
+                        } else if (coordsjson.coords[i].name == "time") {
+                            coordsjson.coords[i].start = offsetdate.toISOString().slice(0, 10);
+                            coordsjson.coords[i].stop = nowdate.toISOString().slice(0, 10);
+                        }
+                    }
+                }
+                if (coordsjson !== null & pipeline !== null){
+                    // Make the full pipeline json
+                    let pipeline_json = JSON.stringify({'pipeline': pipeline, 'coordinates': coordsjson});
+                    let post_filename = lambdaS3Bucket + Object.keys(pipeline.nodes)[Object.keys(pipeline.nodes).length - 1] + '_output_' +
+                        SparkMD5.hash(JSON.stringify({'nodes': pipeline.nodes})) + '_' + SparkMD5.hash('output') + '_' + SparkMD5.hash(JSON.stringify(coordsjson)) + '.json';
+
+                    // Fetch the PODPAC pipeline data\
+                    // The next snippet should go in podpac.js 
+
+                }
+
+
 
                 // Fetch the NDMI data
                 $.get('https://geo.fcc.gov/api/census/area', {
@@ -76,9 +98,11 @@
                     format: 'json'
                 }, function(data) {
                     fips_json = data;
-                    if (fips_json.results.length > 0){
+                    if (fips_json.results.length > 0) {
                         fips_code_county = fips_json.results[0].county_fips;
-                    } else { return; }
+                    } else {
+                        return;
+                    }
 
                     // Get the NDMI data
                     // example https://usdmdataservices.unl.edu/api/USStatistics/GetDroughtSeverityStatisticsByArea?aoi=us&startdate=1/1/2019&enddate=1/1/2020&statisticsType=1
@@ -128,7 +152,7 @@
                         }
                     });
                 });
-                        
+
                 $.extend(rawData, [{
                     date1: '2019/04/01',
                     moisture: 0.1,
@@ -289,7 +313,7 @@
                     if (data[i].date !== undefined) {
                         // No conversion needed
                         outData.values[i].NDMI = data[i].NDMI;
-                        outData.values[i].date = data[i].date.slice(0, 4) + '/' + data[i].date.slice(4, 6) + '/' + data[i].date.slice(6,);
+                        outData.values[i].date = data[i].date.slice(0, 4) + '/' + data[i].date.slice(4, 6) + '/' + data[i].date.slice(6, );
                     }
                 }
                 return outData;
@@ -370,10 +394,10 @@
                     }
                 }
 
-                if (navigator.geolocation){
-                            if (geolocation === null){
-                                navigator.geolocation.getCurrentPosition(setPosition, showError);
-                            }
+                if (navigator.geolocation) {
+                    if (geolocation === null) {
+                        navigator.geolocation.getCurrentPosition(setPosition, showError);
+                    }
                 } else {
                     $('#message')[0].innerHTML = "Geolocation is not supported by this browser. Please enter location manually.";
                     geolocation = undefined;
@@ -391,12 +415,12 @@
             }
 
             // Get the height for the map and plot elements
-            function get_height(){
-                var margin = $('body').css('margin').replace('px','');
-                if ( margin === "") { 
-                        margin = 0;
+            function get_height() {
+                var margin = $('body').css('margin').replace('px', '');
+                if (margin === "") {
+                    margin = 0;
                 } else {
-                        margin = parseInt(margin);
+                    margin = parseInt(margin);
                 }
                 return $(window).height() - $('#controls').height() - $('#message').height() - $('#fcc-message').height() - margin * 2 - 16;
             }
@@ -416,11 +440,13 @@
                 if (marker !== null) {
                     marker.removeFrom(map);
                 }
-                marker = L.marker(geolocation, {draggable: true}).addTo(map);
-                marker.on('dragend', function(){
+                marker = L.marker(geolocation, {
+                    draggable: true
+                }).addTo(map);
+                marker.on('dragend', function() {
                     var coords = marker.getLatLng();
-                    $("#lat")[0].value = coords['lat']; 
-                    $("#lon")[0].value = coords['lng']; 
+                    $("#lat")[0].value = coords['lat'];
+                    $("#lon")[0].value = coords['lng'];
                     updatePlot();
                 })
 
@@ -438,7 +464,7 @@
                     $("#vis").show();
                     $("#map").hide();
 
-                } else if ($('#axisType')[0].value === "SM")  {
+                } else if ($('#axisType')[0].value === "SM") {
                     data = NDMIToSoilmoisture(rawData);
                     domain = [Math.min.apply(Math, rawData.map(function(o) {
                         if (o.moisture === undefined) {
@@ -807,39 +833,84 @@
         <script>
             // First time run functions
             var geolocation = null;
-            var old_geolocation = [null, null]; 
+            var old_geolocation = [null, null];
             var rawData = null;
             var marker = null;
-//             $("#vis").css('display', 'none');
+            var coordsjson = null;
+            var pipeline = null;
+
+            // S3 Configuration
+            var lambdaS3Bucket = 'podpac-drought-monitor';
+            var s3 = null;
+            $.getJSON('json/config.json', function(json) {
+                    AWS.config.update(json);
+                    s3 = new AWS.S3({
+                        apiVersion: '2006-03-01',
+                        params: {Bucket: lambdaS3Bucket}
+                    });
+            });
+            if (s3 !== null){
+                    s3.upload({
+                        Key: "test.txt",
+                        Body: "just a new test",
+                        ACL: "public-read"
+                        }, function(err, data) {
+                                if (err) { 
+                                console.log(err);
+                                return alert("there was and error: ", err.message);
+                                }
+                        }
+                        );
+            }
+
+            $.getJSON('json/coords_template.json', function(json) {
+                coordsjson = json;
+            })
+
+            $.getJSON('json/pipeline_template.json', function(json) {
+                pipeline = json;
+            })
+
+            //             $("#vis").css('display', 'none');
             $("#map").css("height", get_height());
 
             // Create Leaflet Layers
             var OpenStreetMap_Mapnik = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-	                       maxZoom: 19,
-	                       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                });
-            var DroughtWMSOptions = {layers: "usdm_current",
-                                     transparent: true,
-                                     transparency: true,
-                                     opacity: 0.5, 
-                                     format: 'image/png'};
+                maxZoom: 19,
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            });
+            var DroughtWMSOptions = {
+                layers: "usdm_current",
+                transparent: true,
+                transparency: true,
+                opacity: 0.95,
+                format: 'image/png'
+            };
             var DroughtWMS = L.tileLayer.wms("http://ndmc-001.unl.edu:8080/cgi-bin/mapserv.exe?map=/ms4w/apps/usdm/service/usdm_current_wms.map&", DroughtWMSOptions);
 
-            var baseMaps = {"osm": OpenStreetMap_Mapnik};
-            var overlayMaps = {"NDMI": DroughtWMS};
+            var baseMaps = {
+                "osm": OpenStreetMap_Mapnik
+            };
+            var overlayMaps = {
+                "NDMI": DroughtWMS
+            };
 
             // Initial leaflet MAP
-            var map = L.map('map', {center: [42, -100.0], zoom: 4, layers: [OpenStreetMap_Mapnik]});
-            L.control.layers(baseMaps, overlayMaps).addTo(map);  
+            var map = L.map('map', {
+                center: [42, -100.0],
+                zoom: 4,
+                layers: [OpenStreetMap_Mapnik]
+            });
+            L.control.layers(baseMaps, overlayMaps).addTo(map);
 
             // Set up listeners etc. to handle specification for the markers
             map.on('click', function(e) {
-                    if (geolocation !== null & geolocation !== undefined) {
+                if (geolocation !== null & geolocation !== undefined) {
                     return;
                 }
                 var coords = e.latlng;
                 $("#lat")[0].value = coords['lat'];
-                $("#lon")[0].value = coords['lng']; 
+                $("#lon")[0].value = coords['lng'];
                 updatePlot();
 
             })

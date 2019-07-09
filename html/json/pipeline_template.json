@@ -1,0 +1,12 @@
+{
+    "nodes": {
+        "SinCoords": {
+            "node": "core.algorithm.algorithm.SinCoords",
+            "inputs": {}
+        }
+    },
+    "output": {
+        "format": "netcdf",
+        "mode": "file"
+    }
+}

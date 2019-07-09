@@ -1,0 +1,6 @@
+{"coords": [
+    {"values": null, "name": "lat"},
+    {"values": null, "name": "lon"},
+    {"start": null, "stop": null, "step": "1,D", "name": "time"}],
+ "crs": "EPSG:4326"
+}
