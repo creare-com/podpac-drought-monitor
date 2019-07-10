@@ -1,0 +1,31 @@
+{
+"nodes": {
+        "DroughtMonitorCategory": {
+            "node": "datalib.drought_monitor.DroughtMonitorCategory",
+            "attrs": {
+                "altkey": "alt",
+                "crs": null,
+                "datakey": "d3",
+                "latkey": "lat",
+                "lonkey": "lon",
+                "timekey": "time"
+            },
+            "source": "s3://podpac-internal-test/drought_parameters.zarr",
+            "interpolation": "nearest"
+        },
+        "YearSubstituteCoordinates": {
+            "node": "core.algorithm.coord_select.YearSubstituteCoordinates",
+            "attrs": {
+                "substitute_eval_coords": true,
+                "year": "2018"
+            },
+            "inputs": {
+                "source": "DroughtMonitorCategory"
+            }
+        }
+    },
+    "output": {
+        "format": "json",
+        "mode": "file"
+    }
+}
