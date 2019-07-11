@@ -3,12 +3,10 @@
     <head>
         <title>Drought-Monitor</title>
         <meta charset="utf-8"/>
-        <script type="module">
-            
+<!--         <script type="module">
         import * as hdf5 from '../jsfive/index.js';
         window.hdf5 = hdf5;
-        
-        </script>
+        </script> -->
         <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js'></script>
         <script src="https://cdn.jsdelivr.net/npm/vega@5.4.0/build/vega.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/vega-lite@3.3.0/build/vega-lite.js"></script>
@@ -33,6 +31,7 @@
             &nbsp<input type="number" name="lon" id="lon" min="-180" max="180" onchange="updatePlot()"/>
             Longitude (WGS84)
             
+            
             <select name="axisType" id="axisType" onchange="updatePlot()">
                 <option value="NDMI">Time NDMI</option>
                 <option value="SM">Time Soil Moisture</option>
@@ -47,31 +46,51 @@
         <div id="fcc-message">This product uses the FCC Data API but is not endorsed or certified by the FCC.
         </div>
         <script>
+
+
             // Functions used throughout //
 
-            function getPODPACLambda(cfg, pipeline, coords, func){
-                if (cfg.s3 !== null){
-                    let postFilename = lambdaS3Bucket + Object.keys(pipeline.nodes)[Object.keys(pipeline.nodes).length - 1] + '_output_' +
-                        SparkMD5.hash(JSON.stringify({'nodes': pipeline.nodes})) + '_' + SparkMD5.hash('output') + '_' + SparkMD5.hash(JSON.stringify(coords)) + '.json';
+            function getPODPACLambda(cfg, pipeline, coordinates, name, rawData) {
+                if (rawData.SMAP.length == 0) {
+                    func = function (err, data) {
+                                if (err) console.log(err, err.stack);
+                                else initSMAPRawData(rawData, JSON.parse(String.fromCharCode.apply(null, data.Body)), name);};
+                } else {
+                    func = function (err, data){ 
+                                if (err) console.log(err, err.stack); 
+                                else addSMAPRawData(rawData, JSON.parse(String.fromCharCode.apply(null, data.Body)), name);};
+                }
+
+                if (cfg.s3 !== null) {
+                    let postFilename = Object.keys(pipeline.nodes)[Object.keys(pipeline.nodes).length - 1] + '_output_' + SparkMD5.hash(JSON.stringify({
+                        'nodes': pipeline.nodes
+                    })) + '_' + SparkMD5.hash('output') + '_' + SparkMD5.hash(JSON.stringify(coordinates)) + '.json';
                     // Make the full pipeline json
-                    let pipeline_json = JSON.stringify({'pipeline': pipeline, 'coordinates': coords});
+                    let pipeline_json = JSON.stringify({
+                        'pipeline': pipeline,
+                        'coordinates': coordinates
+                    });
                     cfg.s3.upload({
-                        Key: cfg.inFolder + '/' + postFileName,
+                        Key: cfg.inFolder + '/' + postFilename,
                         Body: pipeline_json,
                         ACL: "public-read"
-                        }, function(err, data) {
-                                if (err) { 
-                                console.log(err);
-                                return alert("there was and error: ", err.message);
-                                }
+                    }, function(err, data) {
+                        if (err) {
+                            console.log(err);
+                            return alert("there was and error: ", err.message);
                         }
-                    );
-                    cfg.s3.getObject({ Key: cfg.outFolder + '/' + postFileName}, func);
+                    });
+                    cfg.s3.waitFor('objectExists', {Key: cfg.outFolder + '/' + postFilename, $waiter: {delay: 5, maxAttempts: 24}}, function(err, data){
+                        if (err) console.log(err, err.stack);
+                        else {
+                            cfg.s3.getObject({Key: cfg.outFolder + '/' + postFilename}, func);
+                        }
+                    });
                 }
             }
 
-            function initSMAPRawData(rawData, data, name){
-                for (let i = 0; i < data.data[0][0].length; i++){
+            function initSMAPRawData(rawData, data, name) {
+                for (let i = 0; i < data.data[0][0].length; i++) {
                     entry = {}
                     entry[name] = data.data[0][0][i];
                     entry["date1"] = data.coords.time.data[i].slice(0, 10).replace(/-/g, '\/');
@@ -79,8 +98,8 @@
                 }
                 return rawData;
             }
-            function addSMAPRawData(rawData, data, name){
-                for (let i = 0; i < rawData.SMAP.length; i++){
+            function addSMAPRawData(rawData, data, name) {
+                for (let i = 0; i < rawData.SMAP.length; i++) {
                     rawData.SMAP[i][name] = data.data[0][0][i];
                 }
                 return rawData;
@@ -88,8 +107,8 @@
 
             // Function that retrieves the data -- returns dummy data for now
             function get_data(geolocation, rawData) {
-                if (geolocation === null | rawData == null){
-                        return;
+                if (geolocation === null | rawData == null) {
+                    return;
                 }
                 // To retrieve the NDMI data we need the county fips code -- use the fcc's census api to get this from the lat/lon
                 var fips_request;
@@ -116,24 +135,21 @@
                             coords.coords[i].stop = nowdate.toISOString().slice(0, 10);
                         }
                     }
-                }
-                if (coords !== null){
-                    
                     // Fetch the PODPAC pipeline data\
                     // The next snippet should go in podpac.js 
-//                     let drought_category = null;
-//                     getPODPACLambda(PODPACcfg, pipeline_category, coords, function(json) {
-//                         drought_category = json;
-//                         if (rawData.SMAP.length == 0){
-//                             rawData = initSMAPRawData(rawData, drought_category, "category");
-//                         } else {
-//                             rawData = addSMAPRawData(rawData, drought_category, "category");
-//                         }
-//                     });
+                    //                     let drought_category = null;
+                    //                     getPODPACLambda(PODPACcfg, pipeline_category, coords, function(json) {
+                    //                         drought_category = json;
+                    //                         if (rawData.SMAP.length == 0){
+                    //                             rawData = initSMAPRawData(rawData, drought_category, "category");
+                    //                         } else {
+                    //                             rawData = addSMAPRawData(rawData, drought_category, "category");
+                    //                         }
+                    //                     });
 
                     $.getJSON('json/category.json', function(json) {
                         drought_category = json;
-                        if (rawData.SMAP.length == 0){
+                        if (rawData.SMAP.length == 0) {
                             rawData = initSMAPRawData(rawData, drought_category, "category");
                         } else {
                             rawData = addSMAPRawData(rawData, drought_category, "category");
@@ -142,17 +158,16 @@
                     let sm = null;
                     $.getJSON('json/sm.json', function(json) {
                         sm = json;
-                        if (rawData.SMAP.length == 0){
+                        if (rawData.SMAP.length == 0) {
                             rawData = initSMAPRawData(rawData, sm, "moisture");
                         } else {
                             rawData = addSMAPRawData(rawData, sm, "moisture");
                         }
-
                     });
                     let d0 = null;
                     $.getJSON('json/d0.json', function(json) {
                         d0 = json;
-                        if (rawData.SMAP.length == 0){
+                        if (rawData.SMAP.length == 0) {
                             rawData = initSMAPRawData(rawData, d0, "d0");
                         } else {
                             rawData = addSMAPRawData(rawData, d0, "d0");
@@ -161,7 +176,7 @@
                     let d1 = null;
                     $.getJSON('json/d1.json', function(json) {
                         d1 = json;
-                        if (rawData.SMAP.length == 0){
+                        if (rawData.SMAP.length == 0) {
                             rawData = initSMAPRawData(rawData, d1, "d1");
                         } else {
                             rawData = addSMAPRawData(rawData, d1, "d1");
@@ -170,7 +185,7 @@
                     let d2 = null;
                     $.getJSON('json/d2.json', function(json) {
                         d2 = json;
-                        if (rawData.SMAP.length == 0){
+                        if (rawData.SMAP.length == 0) {
                             rawData = initSMAPRawData(rawData, d2, "d2");
                         } else {
                             rawData = addSMAPRawData(rawData, d2, "d2");
@@ -179,7 +194,7 @@
                     let d3 = null;
                     $.getJSON('json/d3.json', function(json) {
                         d3 = json;
-                        if (rawData.SMAP.length == 0){
+                        if (rawData.SMAP.length == 0) {
                             rawData = initSMAPRawData(rawData, d3, "d3");
                         } else {
                             rawData = addSMAPRawData(rawData, d3, "d3");
@@ -188,13 +203,12 @@
                     let d4 = null;
                     $.getJSON('json/d4.json', function(json) {
                         d4 = json;
-                        if (rawData.SMAP.length == 0){
+                        if (rawData.SMAP.length == 0) {
                             rawData = initSMAPRawData(rawData, d4, "d4");
                         } else {
                             rawData = addSMAPRawData(rawData, d4, "d4");
                         }
                     });
-
 
                 }
 
@@ -239,6 +253,7 @@
                                 dn: 0.5
                             }
                             let rawNDMI = data;
+                            let times = [];
                             for (let i = 0; i < rawNDMI.length; i++) {
                                 var tot_area = parseFloat(rawNDMI[i]["None"].replace(',', ''));
                                 var mean_cat = 5.5 * tot_area;
@@ -254,6 +269,21 @@
                                 }
                                 $.extend(entry, cats);
                                 rawData.NDMI.push(entry);
+                                times.push(entry.date.slice(0, 4) + '-' + entry.date.slice(4, 6) + '-' + entry.date.slice(6, 8));
+                            }
+                            // Ammend/fix the NDMI data with categories (for translation to soil moisture)
+                            if (coords2 !== null) {
+                                for (let i = 0; i < coords2.coords.length; i++) {
+                                    if (coords2.coords[i].name == "lat") {
+                                        coords2.coords[i].values = [parseFloat(geolocation[0])];
+                                    } else if (coords2.coords[i].name == "lon") {
+                                        coords2.coords[i].values = [parseFloat(geolocation[1])];
+                                    } else if (coords2.coords[i].name == "time") {
+                                        coords2.coords[i].values = times;
+                                    }
+                                }
+                                // TODO: Actually make the request here
+
                             }
                             updatePlot();
                         }
@@ -411,7 +441,10 @@
                     return;
                 }
                 if ((rawData === null) | (old_geolocation[0] != geolocation[0]) | (old_geolocation[1] != geolocation[1])) {
-                    rawData = {SMAP: [], NDMI: []};
+                    rawData = {
+                        SMAP: [],
+                        NDMI: []
+                    };
                     rawData = get_data(geolocation, rawData);
                     old_geolocation = geolocation;
                 }
@@ -444,19 +477,19 @@
 
                 } else if ($('#axisType')[0].value === "SM") {
                     data = NDMIToSoilmoisture(rawData);
-//                     domain = [Math.min.apply(Math, rawData.SMAP.map(function(o) {
-//                         if (o.moisture === undefined) {
-//                             return 1;
-//                         } else {
-//                             return o.moisture;
-//                         }
-//                     })), Math.max.apply(Math, rawData.SMAP.map(function(o) {
-//                         if (o.moisture == undefined) {
-//                             return 0;
-//                         } else {
-//                             return o.moisture;
-//                         }
-//                     }))];
+                    //                     domain = [Math.min.apply(Math, rawData.SMAP.map(function(o) {
+                    //                         if (o.moisture === undefined) {
+                    //                             return 1;
+                    //                         } else {
+                    //                             return o.moisture;
+                    //                         }
+                    //                     })), Math.max.apply(Math, rawData.SMAP.map(function(o) {
+                    //                         if (o.moisture == undefined) {
+                    //                             return 0;
+                    //                         } else {
+                    //                             return o.moisture;
+                    //                         }
+                    //                     }))];
                     domain = [0, 0.5];
                     axis.title = "Soil Moisture";
                     axis.tickCount = 5;
@@ -816,7 +849,8 @@
             var rawData = null;
             var marker = null;
             var coords = null;
-            var coords2 = null;  // used to get categories for specific NDMI dates
+            var coords2 = null;
+            // used to get categories for specific NDMI dates
             var pipeline_category = null;
             var pipeline_moisture = null;
             var pipeline_d0 = null;
@@ -824,19 +858,26 @@
             var pipeline_d2 = null;
             var pipeline_d3 = null;
             var pipeline_d4 = null;
+            var test_pipeline = null
 
-            var PODPACcfg = {s3: null, inFolder: "esip_input", outFolder: 'output'};
+            var PODPACcfg = {
+                s3: null,
+                inFolder: "esip_input",
+                outFolder: 'output'
+            };
 
             // S3 Configuration
-            var lambdaS3Bucket = 'podpac-drought-monitor';
+            var lambdaS3Bucket = 'podpac-s3';
             var s3 = null;
             $.getJSON('json/config.json', function(json) {
-                    AWS.config.update(json);
-                    s3 = new AWS.S3({
-                        apiVersion: '2006-03-01',
-                        params: {Bucket: lambdaS3Bucket}
-                    });
-                    PODPACcfg.s3 = s3;
+                AWS.config.update(json);
+                s3 = new AWS.S3({
+                    apiVersion: '2006-03-01',
+                    params: {
+                        Bucket: lambdaS3Bucket
+                    }
+                });
+                PODPACcfg.s3 = s3;
             });
 
             $.getJSON('json/coords_template.json', function(json) {
@@ -875,6 +916,9 @@
             $.getJSON('json/pipeline_d4.json', function(json) {
                 pipeline_d4 = json;
                 get_data(geolocation, rawData);
+            })
+            $.getJSON('json/pipeline_template.json', function(json) {
+                test_pipeline = json;
             })
 
 
