@@ -33,6 +33,10 @@
             
             
             
+            
+            
+            
+            
             <select name="axisType" id="axisType" onchange="updatePlot()">
                 <option value="NDMI">Time NDMI</option>
                 <option value="SM">Time Soil Moisture</option>
@@ -59,11 +63,7 @@
                     if (err)
                         console.log(err, err.stack);
                     else {
-                        if (rData.length == 0) {
-                            initSMAPRawData(rData, JSON.parse(String.fromCharCode.apply(null, data.Body)), name);
-                        } else {
-                            addSMAPRawData(rData, JSON.parse(String.fromCharCode.apply(null, data.Body)), name);
-                        }
+                        addRawData(rData, JSON.parse(String.fromCharCode.apply(null, data.Body)), name);
                     }
                 }
 
@@ -104,18 +104,13 @@
                 }
             }
 
-            function initSMAPRawData(rData, data, name) {
-                for (let i = 0; i < data.data[0][0].length; i++) {
-                    entry = {}
-                    entry[name] = data.data[0][0][i];
-                    entry["date"] = data.coords.time.data[i].slice(0, 10).replace(/-/g, '\/');
-                    rData.push(entry);
-                }
-                return rData;
-            }
-            function addSMAPRawData(rData, data, name) {
-                for (let i = 0; i < rData.length; i++) {
-                    rData[i][name] = data.data[0][0][i];
+            function addRawData(rData, data, name) {
+                for (let i = 0; i < data.coords.time.data.length; i++) {
+                    let key = data.coords.time.data[i].slice(0, 10).replace(/-/g, '\/');
+                    if (rData[key] === undefined) {
+                        rData[key] = {};
+                    }
+                    rData[key][name] = data.data[0][0][i];
                 }
                 return rData;
             }
@@ -137,6 +132,8 @@
 
                 var enddate = nowdate.toLocaleDateString();
                 var startdate = offsetdate.toLocaleDateString();
+
+                offsetdate.setDate(Math.max(0, nowdate.getDate() - 7));
 
                 // Fill the coordinates template
                 if (coords !== null) {
@@ -200,7 +197,6 @@
                         },
                         accepts: 'json',
                         success: function(data) {
-                            rawData.NDMI = [];
                             // we'll need to get this through podpac for the dates in rawNDMI
                             cats = {
                                 d5: null,
@@ -221,14 +217,15 @@
                                     tot_area = tot_area + area;
                                     mean_cat = mean_cat + (4.5 - j) * area;
                                 }
-                                var locNDMI = mean_cat / tot_area;
-                                var entry = {
-                                    date: rawNDMI[i].MapDate,
+                                let locNDMI = mean_cat / tot_area;
+                                let key = rawNDMI[i].MapDate;
+                                // Standardize date representation
+                                key = key.slice(0, 4) + '-' + key.slice(4, 6) + '-' + key.slice(6, 8)
+                                times.push(key);
+                                key = key.replace(/-/g, '\/');
+                                rawData.NDMI[key] = {
                                     NDMI: locNDMI
-                                }
-                                $.extend(entry, cats);
-                                rawData.NDMI.push(entry);
-                                times.push(entry.date.slice(0, 4) + '-' + entry.date.slice(4, 6) + '-' + entry.date.slice(6, 8));
+                                };
                             }
                             // Ammend/fix the NDMI data with categories (for translation to soil moisture)
                             if (coords2 !== null) {
@@ -260,29 +257,30 @@
                 outData = {
                     "values": []
                 }
-                for (var i = 0; i < data.SMAP.length; i++) {
+                let SMAPentries = Object.entries(data.SMAP);
+                let NDMIentries = Object.entries(data.NDMI);
+                for (var i = 0; i < SMAPentries.length; i++) {
                     outData.values.push({});
                     var sm = 0;
                     var ndmi = 0;
-                    if (data.SMAP[i].date !== undefined) {
-                        outData.values[i].moisture = data.SMAP[i].category;
-                        outData.values[i].d5 = 0;
-                        outData.values[i].d4 = 1;
-                        outData.values[i].d3 = 2;
-                        outData.values[i].d2 = 3;
-                        outData.values[i].d1 = 4;
-                        outData.values[i].d0 = 5;
-                        outData.values[i].dn = 6;
-                        outData.values[i].date1 = data.SMAP[i].date;
-                    }
+
+                    outData.values[i].moisture = SMAPentries[i][1].category;
+                    outData.values[i].d5 = 0;
+                    outData.values[i].d4 = 1;
+                    outData.values[i].d3 = 2;
+                    outData.values[i].d2 = 3;
+                    outData.values[i].d1 = 4;
+                    outData.values[i].d0 = 5;
+                    outData.values[i].dn = 6;
+                    outData.values[i].date1 = SMAPentries[i][0];
+
                 }
-                for (var i = 0; i < data.NDMI.length; i++) {
+                for (var i = 0; i < NDMIentries.length; i++) {
                     outData.values.push({});
-                    if (data.NDMI[i].date !== undefined) {
-                        // No conversion needed
-                        outData.values[i].NDMI = data.NDMI[i].NDMI;
-                        outData.values[i].date = data.NDMI[i].date.slice(0, 4) + '/' + data.NDMI[i].date.slice(4, 6) + '/' + data.NDMI[i].date.slice(6, );
-                    }
+
+                    // No conversion needed
+                    outData.values[i].NDMI = NDMIentries[i][1].NDMI;
+                    outData.values[i].date = NDMIentries[i][0];
                 }
                 return outData;
             }
@@ -292,41 +290,40 @@
                 outData = {
                     "values": []
                 }
-                for (var i = 0; i < data.NDMI.length; i++) {
+                let SMAPentries = Object.entries(data.SMAP);
+                let NDMIentries = Object.entries(data.NDMI);
+                for (var i = 0; i < NDMIentries.length; i++) {
                     outData.values.push({});
-                    var sm = 0;
-                    var ndmi = 0;
-                    if (data.NDMI[i].date !== undefined) {
-                        if (data.NDMI[i].NDMI < 1) {
-                            NDMI = (data.NDMI[i].NDMI - 0) * (data.NDMI[i].d4 - data.NDMI[i].d5) + data.NDMI[i].d5;
-                        } else if (data.NDMI[i].NDMI < 2) {
-                            NDMI = (data.NDMI[i].NDMI - 1) * (data.NDMI[i].d3 - data.NDMI[i].d4) + data.NDMI[i].d4;
-                        } else if (data.NDMI[i].NDMI < 3) {
-                            NDMI = (data.NDMI[i].NDMI - 2) * (data.NDMI[i].d2 - data.NDMI[i].d3) + data.NDMI[i].d3;
-                        } else if (data.NDMI[i].NDMI < 4) {
-                            NDMI = (data.NDMI[i].NDMI - 3) * (data.NDMI[i].d1 - data.NDMI[i].d2) + data.NDMI[i].d2;
-                        } else if (data.NDMI[i].NDMI < 5) {
-                            NDMI = (data.NDMI[i].NDMI - 4) * (data.NDMI[i].d0 - data.NDMI[i].d1) + data.NDMI[i].d1;
-                        } else {
-                            NDMI = (data.NDMI[i].NDMI - 5) * (data.NDMI[i].dn - data.NDMI[i].d0) + data.NDMI[i].d0;
-                        }
-                        outData.values[i].NDMI = NDMI;
-                        outData.values[i].date = data.NDMI[i].date.slice(0, 4) + '/' + data.NDMI[i].date.slice(4, 6) + '/' + data.NDMI[i].date.slice(6);
+
+                    if (NDMIentries[i][1].NDMI < 1) {
+                        NDMI = (NDMIentries[i][1].NDMI - 0) * (NDMIentries[i][1].d4 - 0) + 0;
+                    } else if (NDMIentries[i][1].NDMI < 2) {
+                        NDMI = (NDMIentries[i][1].NDMI - 1) * (NDMIentries[i][1].d3 - NDMIentries[i][1].d4) + NDMIentries[i][1].d4;
+                    } else if (NDMIentries[i][1].NDMI < 3) {
+                        NDMI = (NDMIentries[i][1].NDMI - 2) * (NDMIentries[i][1].d2 - NDMIentries[i][1].d3) + NDMIentries[i][1].d3;
+                    } else if (NDMIentries[i][1].NDMI < 4) {
+                        NDMI = (NDMIentries[i][1].NDMI - 3) * (NDMIentries[i][1].d1 - NDMIentries[i][1].d2) + NDMIentries[i][1].d2;
+                    } else if (NDMIentries[i][1].NDMI < 5) {
+                        NDMI = (NDMIentries[i][1].NDMI - 4) * (NDMIentries[i][1].d0 - NDMIentries[i][1].d1) + NDMIentries[i][1].d1;
+                    } else {
+                        NDMI = (NDMIentries[i][1].NDMI - 5) * (0.5 - NDMIentries[i][1].d0) + NDMIentries[i][1].d0;
                     }
+                    outData.values[i].NDMI = NDMI;
+                    outData.values[i].date = NDMIentries[i][0];
+
                 }
-                for (var i = 0; i < data.SMAP.length; i++) {
-                    if (data.SMAP[i].date !== undefined) {
-                        // No conversion needed
-                        outData.values[i].moisture = data.SMAP[i].moisture;
-                        outData.values[i].d5 = 0;
-                        outData.values[i].d4 = data.SMAP[i].d4;
-                        outData.values[i].d3 = data.SMAP[i].d3;
-                        outData.values[i].d2 = data.SMAP[i].d2;
-                        outData.values[i].d1 = data.SMAP[i].d1;
-                        outData.values[i].d0 = data.SMAP[i].d0;
-                        outData.values[i].dn = 0.5;
-                        outData.values[i].date1 = data.SMAP[i].date;
-                    }
+                for (var i = 0; i < SMAPentries.length; i++) {
+                    outData.values.push({});
+                    // No conversion needed
+                    outData.values[i].moisture = SMAPentries[i][1].moisture;
+                    outData.values[i].d5 = 0;
+                    outData.values[i].d4 = SMAPentries[i][1].d4;
+                    outData.values[i].d3 = SMAPentries[i][1].d3;
+                    outData.values[i].d2 = SMAPentries[i][1].d2;
+                    outData.values[i].d1 = SMAPentries[i][1].d1;
+                    outData.values[i].d0 = SMAPentries[i][1].d0;
+                    outData.values[i].dn = 0.5;
+                    outData.values[i].date1 = SMAPentries[i][0];
                 }
                 return outData;
             }
@@ -404,8 +401,8 @@
                 }
                 if ((rawData === null) | (old_geolocation[0] != geolocation[0]) | (old_geolocation[1] != geolocation[1])) {
                     rawData = {
-                        SMAP: [],
-                        NDMI: []
+                        SMAP: {},
+                        NDMI: {}
                     };
                     rawData = get_data(geolocation, rawData);
                     old_geolocation = geolocation;
@@ -452,7 +449,21 @@
                     //                             return o.moisture;
                     //                         }
                     //                     }))];
-                    domain = [0, 0.5];
+                    let smapMax = Math.max.apply(Math, Object.values(rawData.SMAP).map(function(o) {
+                        if (o.moisture == undefined) {
+                            return 0;
+                        } else {
+                            return o.moisture;
+                        }
+                    }));
+                    let ndmiMax = Math.max.apply(Math, Object.values(rawData.NDMI).map(function(o) {
+                        if (o.moisture == undefined) {
+                            return 0;
+                        } else {
+                            return o.moisture;
+                        }
+                    }));
+                    domain = [0, Math.max([ndmiMax, smapMax])];
                     axis.title = "Soil Moisture";
                     axis.tickCount = 5;
                     $("#vis").show();
