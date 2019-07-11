@@ -3,7 +3,7 @@
     <head>
         <title>Drought-Monitor</title>
         <meta charset="utf-8"/>
-<!--         <script type="module">
+        <!--         <script type="module">
         import * as hdf5 from '../jsfive/index.js';
         window.hdf5 = hdf5;
         </script> -->
@@ -32,6 +32,7 @@
             Longitude (WGS84)
             
             
+            
             <select name="axisType" id="axisType" onchange="updatePlot()">
                 <option value="NDMI">Time NDMI</option>
                 <option value="SM">Time Soil Moisture</option>
@@ -47,21 +48,23 @@
         </div>
         <script>
 
-
             // Functions used throughout //
 
             function getPODPACLambda(cfg, pipeline, coordinates, name, rData) {
                 if (pipeline === null | coordinates === null) {
                     return;
                 }
-                
-            func = function (err, data) {
-                                if (err) console.log(err, err.stack);
-                                else {
-                                    if (rData.length == 0) {
-                                        initSMAPRawData(rData, JSON.parse(String.fromCharCode.apply(null, data.Body)), name);};
-                                    } else {
-                                        addSMAPRawData(rData, JSON.parse(String.fromCharCode.apply(null, data.Body)), name);};
+
+                func = function(err, data) {
+                    if (err)
+                        console.log(err, err.stack);
+                    else {
+                        if (rData.length == 0) {
+                            initSMAPRawData(rData, JSON.parse(String.fromCharCode.apply(null, data.Body)), name);
+                        } else {
+                            addSMAPRawData(rData, JSON.parse(String.fromCharCode.apply(null, data.Body)), name);
+                        }
+                    }
                 }
 
                 if (cfg.s3 !== null) {
@@ -83,10 +86,19 @@
                             return alert("there was and error: ", err.message);
                         }
                     });
-                    cfg.s3.waitFor('objectExists', {Key: cfg.outFolder + '/' + postFilename, $waiter: {delay: 10, maxAttempts: 24}}, function(err, data){
-                        if (err) console.log(err, err.stack);
+                    cfg.s3.waitFor('objectExists', {
+                        Key: cfg.outFolder + '/' + postFilename,
+                        $waiter: {
+                            delay: 10,
+                            maxAttempts: 24
+                        }
+                    }, function(err, data) {
+                        if (err)
+                            console.log(err, err.stack);
                         else {
-                            cfg.s3.getObject({Key: cfg.outFolder + '/' + postFilename}, func);
+                            cfg.s3.getObject({
+                                Key: cfg.outFolder + '/' + postFilename
+                            }, func);
                         }
                     });
                 }
@@ -870,7 +882,6 @@
             $.getJSON('json/pipeline_template.json', function(json) {
                 test_pipeline = json;
             })
-
 
             //             $("#vis").css('display', 'none');
             $("#map").css("height", get_height());
