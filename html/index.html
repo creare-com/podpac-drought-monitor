@@ -32,11 +32,6 @@
             Longitude (WGS84)
             
             
-            
-            
-            
-            
-            
             <select name="axisType" id="axisType" onchange="updatePlot()">
                 <option value="NDMI">Time NDMI</option>
                 <option value="SM">Time Soil Moisture</option>
@@ -90,7 +85,7 @@
                         Key: cfg.outFolder + '/' + postFilename,
                         $waiter: {
                             delay: 10,
-                            maxAttempts: 24
+                            maxAttempts: 36  // 6 minutes -- that's pretty long. 
                         }
                     }, function(err, data) {
                         if (err)
@@ -112,6 +107,7 @@
                     }
                     rData[key][name] = data.data[0][0][i];
                 }
+                updatePlot();
                 return rData;
             }
 
@@ -260,6 +256,10 @@
                 let SMAPentries = Object.entries(data.SMAP);
                 let NDMIentries = Object.entries(data.NDMI);
                 for (var i = 0; i < SMAPentries.length; i++) {
+                    if (outData.values[i].category === undefined) {
+                        break;
+                    }
+
                     outData.values.push({});
                     var sm = 0;
                     var ndmi = 0;
@@ -313,8 +313,10 @@
 
                 }
                 for (var i = 0; i < SMAPentries.length; i++) {
+                    if (outData.values[i].moisture === undefined) {
+                        break;
+                    }
                     outData.values.push({});
-                    // No conversion needed
                     outData.values[i].moisture = SMAPentries[i][1].moisture;
                     outData.values[i].d5 = 0;
                     outData.values[i].d4 = SMAPentries[i][1].d4;
