@@ -50,15 +50,18 @@
 
             // Functions used throughout //
 
-            function getPODPACLambda(cfg, pipeline, coordinates, name, rawData) {
-                if (rawData.SMAP.length == 0) {
-                    func = function (err, data) {
+            function getPODPACLambda(cfg, pipeline, coordinates, name, rData) {
+                if (pipeline === null | coordinates === null) {
+                    return;
+                }
+                
+            func = function (err, data) {
                                 if (err) console.log(err, err.stack);
-                                else initSMAPRawData(rawData, JSON.parse(String.fromCharCode.apply(null, data.Body)), name);};
-                } else {
-                    func = function (err, data){ 
-                                if (err) console.log(err, err.stack); 
-                                else addSMAPRawData(rawData, JSON.parse(String.fromCharCode.apply(null, data.Body)), name);};
+                                else {
+                                    if (rData.length == 0) {
+                                        initSMAPRawData(rData, JSON.parse(String.fromCharCode.apply(null, data.Body)), name);};
+                                    } else {
+                                        addSMAPRawData(rData, JSON.parse(String.fromCharCode.apply(null, data.Body)), name);};
                 }
 
                 if (cfg.s3 !== null) {
@@ -80,7 +83,7 @@
                             return alert("there was and error: ", err.message);
                         }
                     });
-                    cfg.s3.waitFor('objectExists', {Key: cfg.outFolder + '/' + postFilename, $waiter: {delay: 5, maxAttempts: 24}}, function(err, data){
+                    cfg.s3.waitFor('objectExists', {Key: cfg.outFolder + '/' + postFilename, $waiter: {delay: 10, maxAttempts: 24}}, function(err, data){
                         if (err) console.log(err, err.stack);
                         else {
                             cfg.s3.getObject({Key: cfg.outFolder + '/' + postFilename}, func);
@@ -89,20 +92,20 @@
                 }
             }
 
-            function initSMAPRawData(rawData, data, name) {
+            function initSMAPRawData(rData, data, name) {
                 for (let i = 0; i < data.data[0][0].length; i++) {
                     entry = {}
                     entry[name] = data.data[0][0][i];
-                    entry["date1"] = data.coords.time.data[i].slice(0, 10).replace(/-/g, '\/');
-                    rawData.SMAP.push(entry);
+                    entry["date"] = data.coords.time.data[i].slice(0, 10).replace(/-/g, '\/');
+                    rData.push(entry);
                 }
-                return rawData;
+                return rData;
             }
-            function addSMAPRawData(rawData, data, name) {
-                for (let i = 0; i < rawData.SMAP.length; i++) {
-                    rawData.SMAP[i][name] = data.data[0][0][i];
+            function addSMAPRawData(rData, data, name) {
+                for (let i = 0; i < rData.length; i++) {
+                    rData[i][name] = data.data[0][0][i];
                 }
-                return rawData;
+                return rData;
             }
 
             // Function that retrieves the data -- returns dummy data for now
@@ -146,70 +149,13 @@
                     //                             rawData = addSMAPRawData(rawData, drought_category, "category");
                     //                         }
                     //                     });
-
-                    $.getJSON('json/category.json', function(json) {
-                        drought_category = json;
-                        if (rawData.SMAP.length == 0) {
-                            rawData = initSMAPRawData(rawData, drought_category, "category");
-                        } else {
-                            rawData = addSMAPRawData(rawData, drought_category, "category");
-                        }
-                    });
-                    let sm = null;
-                    $.getJSON('json/sm.json', function(json) {
-                        sm = json;
-                        if (rawData.SMAP.length == 0) {
-                            rawData = initSMAPRawData(rawData, sm, "moisture");
-                        } else {
-                            rawData = addSMAPRawData(rawData, sm, "moisture");
-                        }
-                    });
-                    let d0 = null;
-                    $.getJSON('json/d0.json', function(json) {
-                        d0 = json;
-                        if (rawData.SMAP.length == 0) {
-                            rawData = initSMAPRawData(rawData, d0, "d0");
-                        } else {
-                            rawData = addSMAPRawData(rawData, d0, "d0");
-                        }
-                    });
-                    let d1 = null;
-                    $.getJSON('json/d1.json', function(json) {
-                        d1 = json;
-                        if (rawData.SMAP.length == 0) {
-                            rawData = initSMAPRawData(rawData, d1, "d1");
-                        } else {
-                            rawData = addSMAPRawData(rawData, d1, "d1");
-                        }
-                    });
-                    let d2 = null;
-                    $.getJSON('json/d2.json', function(json) {
-                        d2 = json;
-                        if (rawData.SMAP.length == 0) {
-                            rawData = initSMAPRawData(rawData, d2, "d2");
-                        } else {
-                            rawData = addSMAPRawData(rawData, d2, "d2");
-                        }
-                    });
-                    let d3 = null;
-                    $.getJSON('json/d3.json', function(json) {
-                        d3 = json;
-                        if (rawData.SMAP.length == 0) {
-                            rawData = initSMAPRawData(rawData, d3, "d3");
-                        } else {
-                            rawData = addSMAPRawData(rawData, d3, "d3");
-                        }
-                    });
-                    let d4 = null;
-                    $.getJSON('json/d4.json', function(json) {
-                        d4 = json;
-                        if (rawData.SMAP.length == 0) {
-                            rawData = initSMAPRawData(rawData, d4, "d4");
-                        } else {
-                            rawData = addSMAPRawData(rawData, d4, "d4");
-                        }
-                    });
-
+                    getPODPACLambda(PODPACcfg, pipeline_category, coords, 'category', rawData.SMAP);
+                    getPODPACLambda(PODPACcfg, pipeline_moisture, coords, 'moisture', rawData.SMAP);
+                    getPODPACLambda(PODPACcfg, pipeline_d0, coords, 'd0', rawData.SMAP);
+                    getPODPACLambda(PODPACcfg, pipeline_d1, coords, 'd1', rawData.SMAP);
+                    getPODPACLambda(PODPACcfg, pipeline_d2, coords, 'd2', rawData.SMAP);
+                    getPODPACLambda(PODPACcfg, pipeline_d3, coords, 'd3', rawData.SMAP);
+                    getPODPACLambda(PODPACcfg, pipeline_d4, coords, 'd4', rawData.SMAP);
                 }
 
                 // Fetch the NDMI data
@@ -242,15 +188,16 @@
                         },
                         accepts: 'json',
                         success: function(data) {
+                            rawData.NDMI = [];
                             // we'll need to get this through podpac for the dates in rawNDMI
                             cats = {
-                                d5: 0.0,
-                                d4: 0.11,
-                                d3: 0.22,
-                                d2: 0.33,
-                                d1: 0.40,
-                                d0: 0.45,
-                                dn: 0.5
+                                d5: null,
+                                d4: null,
+                                d3: null,
+                                d2: null,
+                                d1: null,
+                                d0: null,
+                                dn: null
                             }
                             let rawNDMI = data;
                             let times = [];
@@ -282,8 +229,11 @@
                                         coords2.coords[i].values = times;
                                     }
                                 }
-                                // TODO: Actually make the request here
-
+                                getPODPACLambda(PODPACcfg, pipeline_d0, coords2, 'd0', rawData.NDMI);
+                                getPODPACLambda(PODPACcfg, pipeline_d1, coords2, 'd1', rawData.NDMI);
+                                getPODPACLambda(PODPACcfg, pipeline_d2, coords2, 'd2', rawData.NDMI);
+                                getPODPACLambda(PODPACcfg, pipeline_d3, coords2, 'd3', rawData.NDMI);
+                                getPODPACLambda(PODPACcfg, pipeline_d4, coords2, 'd4', rawData.NDMI);
                             }
                             updatePlot();
                         }
@@ -302,7 +252,7 @@
                     outData.values.push({});
                     var sm = 0;
                     var ndmi = 0;
-                    if (data.SMAP[i].date1 !== undefined) {
+                    if (data.SMAP[i].date !== undefined) {
                         outData.values[i].moisture = data.SMAP[i].category;
                         outData.values[i].d5 = 0;
                         outData.values[i].d4 = 1;
@@ -311,7 +261,7 @@
                         outData.values[i].d1 = 4;
                         outData.values[i].d0 = 5;
                         outData.values[i].dn = 6;
-                        outData.values[i].date1 = data.SMAP[i].date1;
+                        outData.values[i].date1 = data.SMAP[i].date;
                     }
                 }
                 for (var i = 0; i < data.NDMI.length; i++) {
@@ -353,7 +303,7 @@
                     }
                 }
                 for (var i = 0; i < data.SMAP.length; i++) {
-                    if (data.SMAP[i].date1 !== undefined) {
+                    if (data.SMAP[i].date !== undefined) {
                         // No conversion needed
                         outData.values[i].moisture = data.SMAP[i].moisture;
                         outData.values[i].d5 = 0;
@@ -363,7 +313,7 @@
                         outData.values[i].d1 = data.SMAP[i].d1;
                         outData.values[i].d0 = data.SMAP[i].d0;
                         outData.values[i].dn = 0.5;
-                        outData.values[i].date1 = data.SMAP[i].date1;
+                        outData.values[i].date1 = data.SMAP[i].date;
                     }
                 }
                 return outData;
@@ -863,7 +813,7 @@
             var PODPACcfg = {
                 s3: null,
                 inFolder: "esip_input",
-                outFolder: 'output'
+                outFolder: 'esip_output'
             };
 
             // S3 Configuration
