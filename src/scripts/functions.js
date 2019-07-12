@@ -208,15 +208,13 @@ function soilmoistureToNDMI(data) {
     let SMAPentries = Object.entries(data.SMAP);
     let NDMIentries = Object.entries(data.NDMI);
     for (var i = 0; i < SMAPentries.length; i++) {
-        if (outData.values[i].category === undefined) {
-            break;
-        }
 
         outData.values.push({});
-        var sm = 0;
-        var ndmi = 0;
 
-        outData.values[i].moisture = SMAPentries[i][1].category;
+        if (SMAPentries[i][1].category !== undefined) {
+            outData.values[i].moisture = SMAPentries[i][1].category;
+        }
+
         outData.values[i].d5 = 0;
         outData.values[i].d4 = 1;
         outData.values[i].d3 = 2;
@@ -265,11 +263,10 @@ function NDMIToSoilmoisture(data) {
 
     }
     for (var i = 0; i < SMAPentries.length; i++) {
-        if (outData.values[i].moisture === undefined) {
-            break;
-        }
         outData.values.push({});
-        outData.values[i].moisture = SMAPentries[i][1].moisture;
+        if (SMAPentries[i][1].moisture !== undefined) {
+            outData.values[i].moisture = SMAPentries[i][1].moisture;
+        }
         outData.values[i].d5 = 0;
         outData.values[i].d4 = SMAPentries[i][1].d4;
         outData.values[i].d3 = SMAPentries[i][1].d3;
