@@ -25,4 +25,4 @@ env.bak/
 venv.bak/
 
 # Configuration
-app/json/config.json
+src/json/config.json

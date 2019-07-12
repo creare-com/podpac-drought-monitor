@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Drought-Monitor</title>
+        <meta charset="utf-8"/>
+
+        <!-- ----------- -->
+        <!-- Stylesheets -->
+        <!-- ----------- -->
+
+        <!-- Leaflet -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin=""/>
+
+        <!-- Custom -->
+        <link rel="stylesheet" href="index.css" />
+
+        <!-- ---------- -->
+        <!-- Javascript -->
+        <!-- ---------- -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+
+        <!-- Plotting - Vega -->
+        <script src="https://cdn.jsdelivr.net/npm/vega@5.4.0/build/vega.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vega-lite@3.3.0/build/vega-lite.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vega-embed@4.2.0/build/vega-embed.js"></script>
+
+        <!-- MD5 Hash -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/spark-md5/3.0.0/spark-md5.min.js"></script>
+        
+        <!-- AWS -->
+        <script src="https://sdk.amazonaws.com/js/aws-sdk-2.283.1.min.js"></script>
+
+        <!-- Leaflet -->
+        <!-- Note: Leafletjs MUST be loaded AFTER Leaflet's CSS -->
+        <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js" integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og==" crossorigin=""></script>
+        
+        <!-- Drought-Monitor scripts loaded after the <body> tag below -->
+
+    </head>
+    <body>
+        <div id="controls" style="width:100%;">
+            <h1>Drought-Monitor</h1>
+            &nbsp &nbsp &nbsp &nbsp<input type="number" name="lat" id="lat" min="-90" max="90" onchange="updatePlot()"/>
+            Latitude (WGS84)
+            &nbsp<input type="number" name="lon" id="lon" min="-180" max="180" onchange="updatePlot()"/>
+            Longitude (WGS84)
+            
+            
+            <select name="axisType" id="axisType" onchange="updatePlot()">
+                <option value="NDMI">Time NDMI</option>
+                <option value="SM">Time Soil Moisture</option>
+                <option value="MAP">Current Map</option>
+            </select>
+        </div>
+        <!-- Container for the visualization -->
+        <div id="vis" style="width:100%"></div>
+        <!-- Container for the slippy map -->
+        <div id="map" style="width:100%"></div>
+        <div id="message"></div>
+        <div id="fcc-message">This product uses the FCC Data API but is not endorsed or certified by the FCC.
+        </div>
+    </body>
+
+    <!-- Drought-Monitor -->
+    <!-- Note: These must be loaded here to have access to the DOM (above)-->
+    <script src="functions.js"></script>
+    <script src="index.js"></script>
+
+</html>
