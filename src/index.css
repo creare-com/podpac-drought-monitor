@@ -1,7 +1,11 @@
 
+/* Normalize CSS (https://necolas.github.io/normalize.css/) */
+@import 'style/normalize.css';
 
-/* Add space between Vega-Embed links  */
-/* Media: Screen*/
-.vega-actions a {
-    margin-right: 5px;
-}
+/* Leaflet */
+@import url('https://unpkg.com/leaflet@1.5.1/dist/leaflet.css');
+
+/* Drought Monitor */
+@import 'style/plotting.css';
+@import 'style/map.css';
+

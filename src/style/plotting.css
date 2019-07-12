@@ -1,0 +1,5 @@
+/* Add space between Vega-Embed links  */
+/* Media: Screen*/
+.vega-actions a {
+    margin-right: 5px;
+}
