@@ -1,4 +1,5 @@
-var axisType = 'MAP';
+var currentPage = 'map';
+var currentAxisType = 'ndmi';
 
 // First time run functions
 var geolocation = null;
@@ -83,6 +84,10 @@ var OpenStreetMap_Mapnik = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{
     maxZoom: 19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 });
+var OpenStreetMap_Stamen = L.tileLayer('http://a.tile.stamen.com/toner/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+});
 var DroughtWMSOptions = {
     layers: "usdm_current",
     transparent: true,
@@ -93,7 +98,7 @@ var DroughtWMSOptions = {
 var DroughtWMS = L.tileLayer.wms("http://ndmc-001.unl.edu:8080/cgi-bin/mapserv.exe?map=/ms4w/apps/usdm/service/usdm_current_wms.map&", DroughtWMSOptions);
 
 var baseMaps = {
-    "osm": OpenStreetMap_Mapnik
+    "OpenStreetMap": OpenStreetMap_Mapnik
 };
 var overlayMaps = {
     "NDMI": DroughtWMS
@@ -109,15 +114,15 @@ L.control.layers(baseMaps, overlayMaps).addTo(map);
 
 // Set up listeners etc. to handle specification for the markers
 map.on('click', function(e) {
-    if (geolocation !== null & geolocation !== undefined) {
-        return;
-    }
+
+    // set input based on geolocation
     var coords = e.latlng;
     $("#lat")[0].value = coords['lat'];
     $("#lon")[0].value = coords['lng'];
     updatePlot();
-
+    setPage('plot');
 })
 
-// Update the line plot
-updatePlot();
+// Update the map on first entry
+updateMap();
+setPage(currentPage);

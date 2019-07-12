@@ -1,4 +1,21 @@
 
+// Page Router
+function setPage(toPage) {
+    $(`#${currentPage}`).hide();
+    $(`#${currentPage}link`).removeClass('active');
+    $(`#${toPage}`).show();
+    $(`#${toPage}link`).addClass('active');
+    currentPage = toPage;
+
+    if (currentPage === 'plot') {
+        updatePlot();
+    }
+
+    // HACK to get tiles to load. See https://github.com/Leaflet/Leaflet/issues/694
+    if (currentPage === 'map') {
+        setTimeout(function(){ map.invalidateSize() }, 300);
+    }
+}
 
 // Functions used throughout //
 function getPODPACLambda(cfg, pipeline, coordinates, name, rData) {
@@ -10,7 +27,9 @@ function getPODPACLambda(cfg, pipeline, coordinates, name, rData) {
         if (err)
             console.log(err, err.stack);
         else {
-            addRawData(rData, JSON.parse(String.fromCharCode.apply(null, data.Body)), name);
+            let json = String.fromCharCode.apply(null, data.Body);
+            json = json.replace(/NaN/g, 'null');
+            addRawData(rData, JSON.parse(json), name);
         }
     }
 
@@ -281,7 +300,7 @@ function NDMIToSoilmoisture(data) {
 
 function get_geolocation() {
     new_geolocation = [$('#lat')[0].value, $('#lon')[0].value]
-    if (new_geolocation[0] !== '' & new_geolocation[1] !== "") {
+    if (new_geolocation[0] !== "" & new_geolocation[1] !== "") {
         geolocation = new_geolocation;
         return;
     }
@@ -290,15 +309,16 @@ function get_geolocation() {
         $('#lat')[0].value = position.coords.latitude;
         $('#lon')[0].value = position.coords.longitude;
         geolocation = [position.coords.latitude, position.coords.longitude];
-        updatePlot();
+        updateMap();  // callback to update the map since now lat/lon are defined
     }
+
     function showError(error) {
         x = $('#message')[0];
         geolocation = undefined;
         switch (error.code) {
         case error.PERMISSION_DENIED:
             x.innerHTML = "User denied the request for Geolocation."
-            axisType = "MAP"
+            setPage('map');
             break;
         case error.POSITION_UNAVAILABLE:
             x.innerHTML = "Location information is unavailable."
@@ -343,23 +363,47 @@ function get_height() {
     return $(window).height() - $('#nav').height() - margin * 2 - 16;
 }
 
-// Updates the plot data depending on user selections
-function updatePlot() {
 
-    // TODO: This should be moved into a page handler
-    if (axisType === "ABOUT") {
-        $("#plot").hide();
-        $("#map").hide();
-        $("#about").show();
-        return
+// Update marker on the map
+function updateMap() {
+    get_geolocation();
+
+    if (geolocation === null || geolocation === undefined) {
+        return;
+    }
+
+    if (marker !== null) {
+        marker.removeFrom(map);
+    }
+    marker = L.marker(geolocation, {
+        draggable: true
+    }).addTo(map);
+
+    marker.on('dragend', function() {
+        var coords = marker.getLatLng();
+        $("#lat")[0].value = coords['lat'];
+        $("#lon")[0].value = coords['lng'];
+        updatePlot();
+        setPage('plot');
+    });
+}
+
+// Updates the plot data depending on user selections
+function updatePlot(axisType) {
+
+    // update axisType
+    if (axisType) {
+        $(`#${currentAxisType}-button`).removeClass('active');
+        $(`#${axisType}-button`).addClass('active');
+        currentAxisType = axisType;
     }
 
     get_geolocation();
 
-    if (geolocation === null | geolocation === undefined) {
+    if (geolocation === null || geolocation === undefined) {
         return;
     }
-    if ((rawData === null) | (old_geolocation[0] != geolocation[0]) | (old_geolocation[1] != geolocation[1])) {
+    if ((rawData === null) || (old_geolocation[0] != geolocation[0]) | (old_geolocation[1] != geolocation[1])) {
         rawData = {
             SMAP: {},
             NDMI: {}
@@ -367,18 +411,6 @@ function updatePlot() {
         rawData = get_data(geolocation, rawData);
         old_geolocation = geolocation;
     }
-    if (marker !== null) {
-        marker.removeFrom(map);
-    }
-    marker = L.marker(geolocation, {
-        draggable: true
-    }).addTo(map);
-    marker.on('dragend', function() {
-        var coords = marker.getLatLng();
-        $("#lat")[0].value = coords['lat'];
-        $("#lon")[0].value = coords['lng'];
-        updatePlot();
-    })
 
     var data = null;
     var domain = null;
@@ -386,17 +418,13 @@ function updatePlot() {
         "labelFontSize": 24,
         "titleFontSize": 24,
     }
-    if (axisType === "NDMI") {
+    if (currentAxisType === "ndmi") {
         data = soilmoistureToNDMI(rawData);
         domain = [0, 6];
         axis.title = "Drought Category";
         axis.tickCount = 0;
 
-        $("#about").hide();
-        $("#map").hide();
-        $("#plot").show();
-
-    } else if (axisType === "SM") {
+    } else if (currentAxisType === "sm") {
         data = NDMIToSoilmoisture(rawData);
         //                     domain = [Math.min.apply(Math, rawData.SMAP.map(function(o) {
         //                         if (o.moisture === undefined) {
@@ -428,28 +456,12 @@ function updatePlot() {
         domain = [0, Math.max(ndmiMax, smapMax)];
         axis.title = "Soil Moisture";
         axis.tickCount = 5;
-        $("#about").hide();
-        $("#map").hide();
-        $("#plot").show();
-
-    } else if (axisType === "MAP") {
-        $("#plot").hide();
-        $("#about").hide();
-        $("#map").show();
     }
 
     var vlSpec = makeVLSpec(data, domain, axis);
 
-    vlSpec["height"] = get_height()*.7;
-
     // Embed the visualization in the container with id `vis`
     vegaEmbed('#vis', vlSpec);
-}
-
-
-function setAxisType(type) {
-    axisType = type;
-    updatePlot();
 }
 
 // Makes the JSON spec for the Vega-lite plot
@@ -457,7 +469,7 @@ function makeVLSpec(data, domain, axis) {
     var vlSpec = {
         $schema: 'https://vega.github.io/schema/vega-lite/v3.json',
         "width": $('#plot').width(),
-        "height": $(window).height() - $('#controls').height() - $('#message').height(),
+        "height": get_height()*.7,
         "autosize": {
             "type": "fit",
             "contains": "padding"

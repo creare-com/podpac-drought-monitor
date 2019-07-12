@@ -1,1 +1,8 @@
-/* Map Related CSS */
+
+#map {
+    display: none;
+}
+
+.map {
+    width: 100%;
+}

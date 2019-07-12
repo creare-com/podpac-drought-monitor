@@ -21,7 +21,6 @@
     <!-- Javascript -->
     <!-- ---------- -->
     <!-- Jquery -->
-<!--     <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script> -->
     <script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
 
     <!-- Bootstrap -->
@@ -61,17 +60,14 @@
             <!-- Navbar options -->
             <div class="collapse navbar-collapse" id="navbarcollapsed">
                 <ul class="navbar-nav mr-auto">
-                  <li class="nav-item active">
-                    <a class="nav-link" onclick="setAxisType('MAP')">Current Map</a>
+                  <li class="nav-item">
+                    <a id="maplink" class="nav-link" onclick="setPage('map')">Current Map</a>
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link" onclick="setAxisType('NDMI')">Time NDMI</a>
+                    <a id="plotlink" class="nav-link" onclick="setPage('plot')">Time Series</a>
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link" onclick="setAxisType('SM')">Time Soil Moisture</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" onclick="setAxisType('ABOUT')">About</a>
+                    <a id="aboutlink" class="nav-link" onclick="setPage('about')">About</a>
                   </li>
                 </ul>
 
@@ -79,38 +75,50 @@
                 <form class="form-inline my-2 my-lg-0">
                     <label for="lat" class="p-2">Latitude</label>
                     <input name="lat" id="lat" class="form-control mr-sm-2" type="number" min="-90" max="90" onchange="updatePlot()" placeholder="Lat" aria-label="Latitude" />
+                    <small class="form-text text-muted d-none d-md-block d-lg-none">WGS84</small>
                 </form>
                 <form class="form-inline my-2 my-lg-0">
                     <label for="lon" class="p-2">Longitude</label>
                     <input name="lon" id="lon" class="form-control mr-sm-2" type="number" min="-180" max="180" onchange="updatePlot()" placeholder="Lon" aria-label="Longitude" />
-                </form>
-                <form class="form-inline my-2 my-lg-0">
-                    <label class="p-2">(WGS84)</label>
+                    <small class="form-text text-muted">WGS84</small>
                 </form>
             </div>
         </nav>
 
 
-        <!-- Container for the visualization -->
+        <!-- Plot Page -->
         <div id="plot" class="plot container mt-2">
-            <div id="vis"></div>
+            <h2 class="mb-4 mt-2">Time Series</h2>
+            <div class="row">
+              <div class="col-2">
+                <button id="ndmi-button" type="button" class="btn btn-outline-secondary btn-block active" onclick="updatePlot('ndmi')">NDMI</button>
+              </div>
+              <div class="col-2">
+                <button id="sm-button" type="button" class="btn btn-outline-secondary btn-block" onclick="updatePlot('sm')">Soil Moisture</button>
+              </div>
+            </div>
+
+            <!-- plot container -->
+            <div id="vis" class="mt-4 vis-container"></div>
         </div>
 
-        <!-- Container for the slippy map -->
-        <div id="map" style="width:100%"></div>
+        <!-- Map Page -->
+        <div id="map" class="map"></div>
 
         <!-- About Page -->
-        <div id="about" class="container about">
+        <div id="about" class="about container">
             <h2 class="mb-4 mt-4">About</h2>
-            <p>This application is built using <a href="https://podpac.org">PODPAC</a>.
-                PODPAC is an open-source python library for observational data processing analysis and collaboration.
-            </p>
+            <p>This application is built using <a href="https://podpac.org">PODPAC</a>.</p>
+            <a href="https://podpac.org"><img src="img/icon.png" class="podpac-logo" /></a>
+            <p><a href="https://podpac.org">PODPAC</a> is an open-source python library for observational data processing analysis and collaboration.
+            <p>
 
             <h4 class="mb-2 mt-2">FCC Attribution</h4>
             <p>This product uses the FCC Data API but is not endorsed or certified by the FCC.</p>
-            <h4 class="mb-2 mt-2">Messages</h4>
-            <div id="message"></div>
         </div>
+        
+        <div id="message" class="message"></div>
+
 
     </body>
 
