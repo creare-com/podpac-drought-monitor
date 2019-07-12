@@ -76,7 +76,6 @@ $.getJSON('json/pipeline_d4.json', function(json) {
     get_data(geolocation, rawData);
 })
 
-//             $("#vis").css('display', 'none');
 $("#map").css("height", get_height());
 
 // Create Leaflet Layers

@@ -1,3 +1,8 @@
+
+.plot {
+    display: none;
+}
+
 /* Add space between Vega-Embed links  */
 /* Media: Screen*/
 .vega-actions a {

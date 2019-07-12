@@ -49,7 +49,7 @@
 
     <body>
 
-        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
+        <nav id="nav" class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
           <!-- Add link here later -->
           <a class="navbar-brand" href="#">Drought-Monitor</a>
 
@@ -70,6 +70,9 @@
                   <li class="nav-item">
                     <a class="nav-link" onclick="setAxisType('SM')">Time Soil Moisture</a>
                   </li>
+                  <li class="nav-item">
+                    <a class="nav-link" onclick="setAxisType('ABOUT')">About</a>
+                  </li>
                 </ul>
 
                 <!-- Inputs -->
@@ -89,12 +92,24 @@
 
 
         <!-- Container for the visualization -->
-        <div id="vis" style="width:100%"></div>
+        <div id="plot" class="plot container mt-2">
+            <div id="vis"></div>
+        </div>
 
         <!-- Container for the slippy map -->
         <div id="map" style="width:100%"></div>
-        <div id="message"></div>
-        <div id="fcc-message">This product uses the FCC Data API but is not endorsed or certified by the FCC.
+
+        <!-- About Page -->
+        <div id="about" class="container about">
+            <h2 class="mb-4 mt-4">About</h2>
+            <p>This application is built using <a href="https://podpac.org">PODPAC</a>.
+                PODPAC is an open-source python library for observational data processing analysis and collaboration.
+            </p>
+
+            <h4 class="mb-2 mt-2">FCC Attribution</h4>
+            <p>This product uses the FCC Data API but is not endorsed or certified by the FCC.</p>
+            <h4 class="mb-2 mt-2">Messages</h4>
+            <div id="message"></div>
         </div>
 
     </body>

@@ -343,11 +343,20 @@ function get_height() {
     } else {
         margin = parseInt(margin);
     }
-    return $(window).height() - $('#controls').height() - $('#message').height() - $('#fcc-message').height() - margin * 2 - 16;
+    return $(window).height() - $('#nav').height() - margin * 2 - 16;
 }
 
 // Updates the plot data depending on user selections
 function updatePlot() {
+
+    // TODO: This should be moved into a page handler
+    if (axisType === "ABOUT") {
+        $("#plot").hide();
+        $("#map").hide();
+        $("#about").show();
+        return
+    }
+
     get_geolocation();
 
     if (geolocation === null | geolocation === undefined) {
@@ -385,8 +394,10 @@ function updatePlot() {
         domain = [0, 6];
         axis.title = "Drought Category";
         axis.tickCount = 0;
-        $("#vis").show();
+
+        $("#about").hide();
         $("#map").hide();
+        $("#plot").show();
 
     } else if (axisType === "SM") {
         data = NDMIToSoilmoisture(rawData);
@@ -420,16 +431,19 @@ function updatePlot() {
         domain = [0, Math.max(ndmiMax, smapMax)];
         axis.title = "Soil Moisture";
         axis.tickCount = 5;
-        $("#vis").show();
+        $("#about").hide();
         $("#map").hide();
+        $("#plot").show();
 
     } else if (axisType === "MAP") {
-        $("#vis").hide();
+        $("#plot").hide();
+        $("#about").hide();
         $("#map").show();
     }
+
     var vlSpec = makeVLSpec(data, domain, axis);
 
-    vlSpec["height"] = get_height();
+    vlSpec["height"] = get_height()*.7;
 
     // Embed the visualization in the container with id `vis`
     vegaEmbed('#vis', vlSpec);
@@ -445,7 +459,7 @@ function setAxisType(type) {
 function makeVLSpec(data, domain, axis) {
     var vlSpec = {
         $schema: 'https://vega.github.io/schema/vega-lite/v3.json',
-        "width": $('#vis').width(),
+        "width": $('#plot').width(),
         "height": $(window).height() - $('#controls').height() - $('#message').height(),
         "autosize": {
             "type": "fit",
