@@ -1,3 +1,5 @@
+var axisType = 'MAP';
+
 // First time run functions
 var geolocation = null;
 var old_geolocation = [null, null];
@@ -5,6 +7,7 @@ var rawData = null;
 var marker = null;
 var coords = null;
 var coords2 = null;
+
 // used to get categories for specific NDMI dates
 var pipeline_category = null;
 var pipeline_moisture = null;

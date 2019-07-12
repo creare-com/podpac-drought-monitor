@@ -301,7 +301,7 @@ function get_geolocation() {
         switch (error.code) {
         case error.PERMISSION_DENIED:
             x.innerHTML = "User denied the request for Geolocation."
-            $("#axisType")[0].value = "MAP"
+            axisType = "MAP"
             break;
         case error.POSITION_UNAVAILABLE:
             x.innerHTML = "Location information is unavailable."
@@ -380,7 +380,7 @@ function updatePlot() {
         "labelFontSize": 24,
         "titleFontSize": 24,
     }
-    if ($('#axisType')[0].value === "NDMI") {
+    if (axisType === "NDMI") {
         data = soilmoistureToNDMI(rawData);
         domain = [0, 6];
         axis.title = "Drought Category";
@@ -388,7 +388,7 @@ function updatePlot() {
         $("#vis").show();
         $("#map").hide();
 
-    } else if ($('#axisType')[0].value === "SM") {
+    } else if (axisType === "SM") {
         data = NDMIToSoilmoisture(rawData);
         //                     domain = [Math.min.apply(Math, rawData.SMAP.map(function(o) {
         //                         if (o.moisture === undefined) {
@@ -423,7 +423,7 @@ function updatePlot() {
         $("#vis").show();
         $("#map").hide();
 
-    } else if ($('#axisType')[0].value === "MAP") {
+    } else if (axisType === "MAP") {
         $("#vis").hide();
         $("#map").show();
     }
@@ -433,6 +433,12 @@ function updatePlot() {
 
     // Embed the visualization in the container with id `vis`
     vegaEmbed('#vis', vlSpec);
+}
+
+
+function setAxisType(type) {
+    axisType = type;
+    updatePlot();
 }
 
 // Makes the JSON spec for the Vega-lite plot
