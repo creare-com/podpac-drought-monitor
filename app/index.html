@@ -3,25 +3,40 @@
     <head>
         <title>Drought-Monitor</title>
         <meta charset="utf-8"/>
-        <!--         <script type="module">
-        import * as hdf5 from '../jsfive/index.js';
-        window.hdf5 = hdf5;
-        </script> -->
-        <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js'></script>
+
+        <!-- ----------- -->
+        <!-- Stylesheets -->
+        <!-- ----------- -->
+
+        <!-- Leaflet -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin=""/>
+
+        <!-- Custom -->
+        <link rel="stylesheet" href="index.css" />
+
+        <!-- ---------- -->
+        <!-- Javascript -->
+        <!-- ---------- -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+
+        <!-- Plotting - Vega -->
         <script src="https://cdn.jsdelivr.net/npm/vega@5.4.0/build/vega.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/vega-lite@3.3.0/build/vega-lite.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/vega-embed@4.2.0/build/vega-embed.js"></script>
+
+        <!-- MD5 Hash -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/spark-md5/3.0.0/spark-md5.min.js"></script>
+        
+        <!-- AWS -->
         <script src="https://sdk.amazonaws.com/js/aws-sdk-2.283.1.min.js"></script>
-        <style media="screen">
-            /* Add space between Vega-Embed links  */
-            .vega-actions a {
-                margin-right: 5px;
-            }
-        </style>
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin=""/>
-        <!-- Make sure you put this AFTER Leaflet's CSS -->
+
+        <!-- Leaflet -->
+        <!-- Note: Leafletjs MUST be loaded AFTER Leaflet's CSS -->
         <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js" integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og==" crossorigin=""></script>
+
+        <!-- Drought-Monitor -->
+        <script src="index.js"></script>
+        
     </head>
     <body>
         <div id="controls" style="width:100%;">
