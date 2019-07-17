@@ -106,9 +106,9 @@ function get_data(geolocation, rawData) {
     if (coords !== null) {
         for (let i = 0; i < coords.coords.length; i++) {
             if (coords.coords[i].name == "lat") {
-                coords.coords[i].values = [parseFloat(geolocation[0])];
+                coords.coords[i].values = [Math.round(parseFloat(geolocation[0])*100)/100];
             } else if (coords.coords[i].name == "lon") {
-                coords.coords[i].values = [parseFloat(geolocation[1])];
+                coords.coords[i].values = [Math.round(parseFloat(geolocation[1])*100)/100];
             } else if (coords.coords[i].name == "time") {
                 coords.coords[i].start = offsetdate.toISOString().slice(0, 10);
                 coords.coords[i].stop = nowdate.toISOString().slice(0, 10);
@@ -198,9 +198,9 @@ function get_data(geolocation, rawData) {
                 if (coords2 !== null) {
                     for (let i = 0; i < coords2.coords.length; i++) {
                         if (coords2.coords[i].name == "lat") {
-                            coords2.coords[i].values = [parseFloat(geolocation[0])];
+                            coords2.coords[i].values = [Math.round(parseFloat(geolocation[0])*100)/100];
                         } else if (coords2.coords[i].name == "lon") {
-                            coords2.coords[i].values = [parseFloat(geolocation[1])];
+                            coords2.coords[i].values = [Math.round(parseFloat(geolocation[1])*100)/100];
                         } else if (coords2.coords[i].name == "time") {
                             coords2.coords[i].values = times;
                         }
