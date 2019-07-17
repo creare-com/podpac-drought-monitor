@@ -21,8 +21,8 @@ var test_pipeline = null
 
 var PODPACcfg = {
     s3: null,
-    inFolder: "esip_input",
-    outFolder: 'esip_output'
+    inFolder: "esip_input2",
+    outFolder: 'esip_output2'
 };
 
 // S3 Configuration

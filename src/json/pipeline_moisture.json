@@ -1,56 +1,146 @@
 {
     "nodes": {
-        "SMAP": {
-            "node": "datalib.smap_egi.SMAP",
+        "Zarr": {
+            "node": "core.data.types.Zarr",
             "attrs": {
-                "base_url": "https://n5eil01u.ecs.nsidc.org/egi/request",
-                "data_key": "/Soil_Moisture_Retrieval_Data_AM/soil_moisture",
-                "lat_key": "/Soil_Moisture_Retrieval_Data_AM/latitude",
-                "lon_key": "/Soil_Moisture_Retrieval_Data_AM/longitude",
-                "min_bounds_span": {
-                    "lon": 0.3,
-                    "lat": 0.3
-                },
-                "product": "SPL3SMP_E_AM",
-                "short_name": "SPL3SMP_E",
-                "time_key": "",
-                "version": "002"
+                "altkey": "alt",
+                "cf_calendar": "proleptic_gregorian",
+                "cf_time": true,
+                "cf_units": "days since 2000-01-01",
+                "crs": "epsg:6933",
+                "datakey": "Soil_Moisture_Retrieval_Data_AM_soil_moisture",
+                "dims": [
+                    "time",
+                    "lat",
+                    "lon"
+                ],
+                "latkey": "fakedim0",
+                "lonkey": "fakedim1",
+                "timekey": "time"
             },
-            "source": "https://n5eil01u.ecs.nsidc.org/egi/request?short_name=SPL3SMP_E&Coverage=/Soil_Moisture_Retrieval_Data_AM/soil_moisture,/Soil_Moisture_Retrieval_Data_AM/latitude,/Soil_Moisture_Retrieval_Data_AM/longitude&format=HDF-EOS&version=002",
+            "source": "s3://podpac-internal-test/SPL3SMP_E.002_9km_aid0001.zarr",
             "interpolation": "nearest"
         },
-        "SMAP_1": {
-            "node": "datalib.smap_egi.SMAP",
+        "Zarr_1": {
+            "node": "core.data.types.Zarr",
             "attrs": {
-                "base_url": "https://n5eil01u.ecs.nsidc.org/egi/request",
-                "data_key": "/Soil_Moisture_Retrieval_Data_PM/soil_moisture_pm",
-                "lat_key": "/Soil_Moisture_Retrieval_Data_PM/latitude_pm",
-                "lon_key": "/Soil_Moisture_Retrieval_Data_PM/longitude_pm",
-                "min_bounds_span": {
-                    "lon": 0.3,
-                    "lat": 0.3
-                },
-                "product": "SPL3SMP_E_PM",
-                "short_name": "SPL3SMP_E",
-                "time_key": "",
-                "version": "002"
+                "altkey": "alt",
+                "cf_calendar": "proleptic_gregorian",
+                "cf_time": true,
+                "cf_units": "days since 2000-01-01",
+                "crs": "epsg:6933",
+                "datakey": "Soil_Moisture_Retrieval_Data_AM_retrieval_qual_flag",
+                "dims": [
+                    "time",
+                    "lat",
+                    "lon"
+                ],
+                "latkey": "fakedim0",
+                "lonkey": "fakedim1",
+                "timekey": "time"
             },
-            "source": "https://n5eil01u.ecs.nsidc.org/egi/request?short_name=SPL3SMP_E&Coverage=/Soil_Moisture_Retrieval_Data_PM/soil_moisture_pm,/Soil_Moisture_Retrieval_Data_PM/latitude_pm,/Soil_Moisture_Retrieval_Data_PM/longitude_pm&format=HDF-EOS&version=002",
+            "source": "s3://podpac-internal-test/SPL3SMP_E.002_9km_aid0001.zarr",
+            "interpolation": "nearest"
+        },
+        "Arithmetic": {
+            "node": "core.algorithm.algorithm.Arithmetic",
+            "attrs": {
+                "eqn": "((B <= 1) / (B <= 1)) * A ",
+                "params": {}
+            },
+            "inputs": {
+                "A": "Zarr",
+                "B": "Zarr_1"
+            }
+        },
+        "Zarr_2": {
+            "node": "core.data.types.Zarr",
+            "attrs": {
+                "altkey": "alt",
+                "cf_calendar": "proleptic_gregorian",
+                "cf_time": true,
+                "cf_units": "days since 2000-01-01",
+                "crs": "epsg:6933",
+                "datakey": "Soil_Moisture_Retrieval_Data_PM_soil_moisture_pm",
+                "dims": [
+                    "time",
+                    "lat",
+                    "lon"
+                ],
+                "latkey": "fakedim0",
+                "lonkey": "fakedim1",
+                "timekey": "time"
+            },
+            "source": "s3://podpac-internal-test/SPL3SMP_E.002_9km_aid0001.zarr",
+            "interpolation": "nearest"
+        },
+        "Zarr_3": {
+            "node": "core.data.types.Zarr",
+            "attrs": {
+                "altkey": "alt",
+                "cf_calendar": "proleptic_gregorian",
+                "cf_time": true,
+                "cf_units": "days since 2000-01-01",
+                "crs": "epsg:6933",
+                "datakey": "Soil_Moisture_Retrieval_Data_PM_retrieval_qual_flag_pm",
+                "dims": [
+                    "time",
+                    "lat",
+                    "lon"
+                ],
+                "latkey": "fakedim0",
+                "lonkey": "fakedim1",
+                "timekey": "time"
+            },
+            "source": "s3://podpac-internal-test/SPL3SMP_E.002_9km_aid0001.zarr",
+            "interpolation": "nearest"
+        },
+        "Arithmetic_1": {
+            "node": "core.algorithm.algorithm.Arithmetic",
+            "attrs": {
+                "eqn": "((B <= 1) / (B <= 1)) * A ",
+                "params": {}
+            },
+            "inputs": {
+                "A": "Zarr_2",
+                "B": "Zarr_3"
+            }
+        },
+        "Zarr_4": {
+            "node": "core.data.types.Zarr",
+            "attrs": {
+                "altkey": "alt",
+                "cf_calendar": "proleptic_gregorian",
+                "cf_time": true,
+                "cf_units": "days since 2000-01-01",
+                "crs": "epsg:6933",
+                "datakey": "Geophysical_Data_sm_surface",
+                "dims": [
+                    "time",
+                    "lat",
+                    "lon"
+                ],
+                "latkey": "fakedim0",
+                "lonkey": "fakedim1",
+                "timekey": "time"
+            },
+            "source": "s3://podpac-internal-test/SPL4SMGP.004_9km_aid0001.zarr",
             "interpolation": "nearest"
         },
         "OrderedCompositor": {
             "node": "core.compositor.OrderedCompositor",
             "attrs": {
-                "source": "SMAP L3 / L4"
+                "source": "SMAP L3 AM/PM Combined"
             },
             "sources": [
-                "SMAP",
-                "SMAP_1"
+                "Arithmetic",
+                "Arithmetic_1",
+                "Zarr_4"
             ],
             "interpolation": null
         }
     },
-    "output": {
+    "output": { 
         "format": "json",
         "mode": "file"
     }
