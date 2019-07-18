@@ -1,0 +1,14 @@
+
+#plot {
+    display: none;
+}
+
+.vis-container {
+    margin-left: -2%;
+}
+/* Vega Plot Width handled in spec */
+
+/* Add space between Vega-Embed links  */
+.vega-actions a {
+    margin-right: 5px;
+}

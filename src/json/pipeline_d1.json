@@ -1,11 +1,11 @@
 {
-"nodes": {
+    "nodes": {
         "DroughtMonitorCategory": {
             "node": "datalib.drought_monitor.DroughtMonitorCategory",
             "attrs": {
                 "altkey": "alt",
                 "crs": null,
-                "datakey": "d4",
+                "datakey": "d1",
                 "latkey": "lat",
                 "lonkey": "lon",
                 "timekey": "time"
@@ -24,7 +24,7 @@
             }
         }
     },
-    "output": {
+    "output": { 
         "format": "json",
         "mode": "file"
     }
