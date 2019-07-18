@@ -1,4 +1,8 @@
 
-.about {
+#about {
     display: none;
+}
+
+.podpac-logo {
+    width: 150px;
 }
