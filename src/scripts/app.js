@@ -93,15 +93,29 @@ var DroughtWMSOptions = {
     transparent: true,
     transparency: true,
     opacity: 0.95,
-    format: 'image/png'
+    format: 'image/png',
 };
 var DroughtWMS = L.tileLayer.wms("http://ndmc-001.unl.edu:8080/cgi-bin/mapserv.exe?map=/ms4w/apps/usdm/service/usdm_current_wms.map&", DroughtWMSOptions);
+// https://79n7uh4as5.execute-api.us-east-1.amazonaws.com/default/podpac_lambda_ESIP3/?service=WMS&request=GetMap&layers=https://podpac-s3.s3.amazonaws.com/podpac/pipeline_category.json&styles=&format=image/png&transparent=true&version=1.1.1&transparency=true&width=256&height=256&srs=EPSG:3857&bbox=-12523442.714243278,0,-10018754.171394622,2504688.542848655&time=2019-07-18T15:34:05.212578
+// https://79n7uh4as5.execute-api.us-east-1.amazonaws.com/default/podpac_lambda_ESIP3/?&service=WMS&request=GetMap&layers=https%3A%2F%2Fpodpac-s3.s3.amazonaws.com%2Fpodpac%2Fpipeline_category.json&styles=&format=image%2Fpng&transparent=true&version=1.1.1&transparency=true&time=2019-07-18T15%3A34%3A05&width=256&height=256&srs=EPSG%3A3857&bbox=-7514065.628545968,7514065.628545967,-5009377.085697311,10018754.171394628
+var SMAPWMSOptions = {
+    layers: "https://podpac-s3.s3.amazonaws.com/podpac/pipeline_category.json",
+//    layers: "%PARAMS%",
+//    params: '{"nodes": {"SinCoords": {"node": "core.algorithm.algorithm.SinCoords", "inputs": {}}}}',
+    transparent: true,
+    transparency: true,
+    opacity: 0.95,
+    time: '2019-05-18T15:34:05',
+    format: 'image/png'
+};
+var SMAPWMS = L.tileLayer.wms("https://2sfdbzrbf0.execute-api.us-east-1.amazonaws.com/beta/lambda/?", SMAPWMSOptions);
 
 var baseMaps = {
     "OpenStreetMap": OpenStreetMap_Mapnik
 };
 var overlayMaps = {
-    "NDMI": DroughtWMS
+    "NDMI": DroughtWMS,
+    "SMAPDMI": SMAPWMS
 };
 
 // Initial leaflet MAP
