@@ -446,11 +446,11 @@ function updatePlot(axisType) {
                 return o.moisture;
             }
         }));
-        let ndmiMax = Math.max.apply(Math, Object.values(rawData.NDMI).map(function(o) {
-            if (o.moisture == undefined) {
+        let ndmiMax = Math.max.apply(Math, data.values.map(function(o) {
+            if (o.NDMI == undefined) {
                 return 0;
             } else {
-                return o.moisture;
+                return o.NDMI;
             }
         }));
         domain = [0, Math.max(ndmiMax, smapMax)];
