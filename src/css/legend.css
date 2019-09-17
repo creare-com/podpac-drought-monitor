@@ -1,0 +1,43 @@
+
+#legend {
+    position: fixed;
+    bottom: 20px;
+    right: 5px;
+    z-index: 9999;
+    background-color: white;
+    padding-left:10px;
+    padding-right: 10px;
+    border: 1px solid black;
+}
+
+ul.legend-list {
+    list-style: none!important;
+    margin-left: 0!important;
+
+}
+
+.dcatbox {
+    border: 1px solid #ccc;
+    width: 48px!important;
+    height: 20px!important;
+    margin-left: -19px;
+    margin-bottom: -5px;
+    display: inline-block;
+}
+
+.dcatline {
+    width: 48px!important;
+    height: 30px!important;
+    margin-left: -19px;
+    margin-bottom: 0 px;
+    display: inline-block;
+}
+
+
+.usdm-d0{background-color:#FFFF00;color:#000000;}
+.usdm-d1{background-color:#FCD37F;color:#000000;}
+.usdm-d2{background-color:#FFAA00;color:#000000;}
+.usdm-d3{background-color:#E60000;color:white;}
+.usdm-d4{background-color:#730000;color:white;}
+.usdm-nodata{background-color:#9c9c9c;color:white;}
+.usdm-dnone{background-color:white;color:white;}

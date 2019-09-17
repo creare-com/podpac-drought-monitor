@@ -115,7 +115,7 @@ var baseMaps = {
 };
 var overlayMaps = {
     "NDMI": DroughtWMS,
-    "SMAPDMI": SMAPWMS
+    "SMAP DMI": SMAPWMS
 };
 
 // Initial leaflet MAP
