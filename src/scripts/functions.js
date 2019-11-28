@@ -27,46 +27,24 @@ function getPODPACLambda(cfg, pipeline, coordinates, name, rData) {
         if (err)
             console.log(err, err.stack);
         else {
-            let json = String.fromCharCode.apply(null, data.Body);
+            let json = data.Payload;
+//             let json = String.fromCharCode.apply(null, data.Body);
             json = json.replace(/NaN/g, 'null');
             addRawData(rData, JSON.parse(json), name);
         }
     }
 
-    if (cfg.s3 !== null) {
+    if (cfg.lambda !== null) {
         let postFilename = Object.keys(pipeline.nodes)[Object.keys(pipeline.nodes).length - 1] + '_output_' + SparkMD5.hash(JSON.stringify({
             'nodes': pipeline.nodes
         })) + '_' + SparkMD5.hash('output') + '_' + SparkMD5.hash(JSON.stringify(coordinates)) + '.json';
         // Make the full pipeline json
         let pipeline_json = JSON.stringify({
             'pipeline': pipeline,
-            'coordinates': coordinates
+            'coordinates': coordinates,
+            'settings': cfg.settings
         });
-        cfg.s3.upload({
-            Key: cfg.inFolder + '/' + postFilename,
-            Body: pipeline_json,
-            ACL: "public-read"
-        }, function(err, data) {
-            if (err) {
-                console.log(err);
-                return alert("there was and error: ", err.message);
-            }
-        });
-        cfg.s3.waitFor('objectExists', {
-            Key: cfg.outFolder + '/' + postFilename,
-            $waiter: {
-                delay: 10,
-                maxAttempts: 36  // 6 minutes -- that's pretty long. 
-            }
-        }, function(err, data) {
-            if (err)
-                console.log(err, err.stack);
-            else {
-                cfg.s3.getObject({
-                    Key: cfg.outFolder + '/' + postFilename
-                }, func);
-            }
-        });
+        cfg.lambda.invoke(cfg.params, func);
     }
 }
 
