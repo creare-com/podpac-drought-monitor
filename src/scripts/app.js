@@ -23,8 +23,8 @@ var test_pipeline = null
 var PODPACcfg = {
     params: {
         FunctionName : 'podpac-drought-monitor-lambda',
-        InvocationType : 'Event',
-//        InvocationType : 'RequestResponse',
+//         InvocationType : 'Event',
+        InvocationType : 'RequestResponse',
         LogType : 'None'
     },
     lambda: null,
@@ -47,18 +47,18 @@ $.getJSON('json/config.json', function(json) {
 $.getJSON('json/settings.json', function(json) {
     settings = json;
     PODPACcfg.settings = settings;
-})
+});
 
 // APPLICATION JSON
 
 $.getJSON('json/coords_template.json', function(json) {
     coords = json;
     get_data(geolocation, rawData);
-})
+});
 $.getJSON('json/coords_template2.json', function(json) {
     coords2 = json;
     get_data(geolocation, rawData);
-})
+});
 
 $.getJSON('json/pipeline_category.json', function(json) {
     pipeline_category = json;
@@ -67,27 +67,27 @@ $.getJSON('json/pipeline_category.json', function(json) {
 $.getJSON('json/pipeline_moisture.json', function(json) {
     pipeline_moisture = json;
     get_data(geolocation, rawData);
-})
+});
 $.getJSON('json/pipeline_d0.json', function(json) {
     pipeline_d0 = json;
     get_data(geolocation, rawData);
-})
+});
 $.getJSON('json/pipeline_d1.json', function(json) {
     pipeline_d1 = json;
     get_data(geolocation, rawData);
-})
+});
 $.getJSON('json/pipeline_d2.json', function(json) {
     pipeline_d2 = json;
     get_data(geolocation, rawData);
-})
+});
 $.getJSON('json/pipeline_d3.json', function(json) {
     pipeline_d3 = json;
     get_data(geolocation, rawData);
-})
+});
 $.getJSON('json/pipeline_d4.json', function(json) {
     pipeline_d4 = json;
     get_data(geolocation, rawData);
-})
+});
 
 $("#map").css("height", get_height());
 

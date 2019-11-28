@@ -28,23 +28,26 @@ function getPODPACLambda(cfg, pipeline, coordinates, name, rData) {
             console.log(err, err.stack);
         else {
             let json = data.Payload;
-//             let json = String.fromCharCode.apply(null, data.Body);
             json = json.replace(/NaN/g, 'null');
-            addRawData(rData, JSON.parse(json), name);
+            addRawData(rData, JSON.parse(JSON.parse(json)), name);
         }
     }
 
     if (cfg.lambda !== null) {
-        let postFilename = Object.keys(pipeline.nodes)[Object.keys(pipeline.nodes).length - 1] + '_output_' + SparkMD5.hash(JSON.stringify({
-            'nodes': pipeline.nodes
+        let postFilename = Object.keys(pipeline)[Object.keys(pipeline).length - 1] + '_output_' + SparkMD5.hash(JSON.stringify({
+            'nodes': pipeline
         })) + '_' + SparkMD5.hash('output') + '_' + SparkMD5.hash(JSON.stringify(coordinates)) + '.json';
         // Make the full pipeline json
         let pipeline_json = JSON.stringify({
             'pipeline': pipeline,
+            'output': {"format": "json", "mode": "file"},
             'coordinates': coordinates,
             'settings': cfg.settings
         });
-        cfg.lambda.invoke(cfg.params, func);
+        let params = cfg.params;
+        params['Payload'] = pipeline_json;
+        console.log(params);
+        cfg.lambda.invoke(params, func);
     }
 }
 
