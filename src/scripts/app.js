@@ -32,16 +32,14 @@ var PODPACcfg = {
 };
 
 // Lambda Configuration
-var aws_lambda = null;
-var aws_config = null;
-$.getJSON('json/config.json', function(json) {
-    aws_config = json;
-    AWS.config.update(json);
-    aws_lambda = new AWS.Lambda({
-        apiVersion: '2015-03-31'
-        });
-    PODPACcfg.lambda = aws_lambda;
+AWS.config.region = 'us-east-1'
+AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+    IdentityPoolId: 'us-east-1:6d5095bc-b9b6-42a7-ae6e-03b74431d949',
 });
+PODPACcfg.lambda = new AWS.Lambda({
+    apiVersion: '2015-03-31'
+});
+ 
 
 // PODPAC Settings
 $.getJSON('json/settings.json', function(json) {
