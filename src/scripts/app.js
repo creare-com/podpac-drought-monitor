@@ -1,5 +1,7 @@
 var currentPage = 'map';
 var currentAxisType = 'ndmi';
+var nowdate = new Date();
+nowdate.setDate(nowdate.getDate() - 7);
 
 // First time run functions
 var geolocation = null;
@@ -106,22 +108,34 @@ var DroughtWMSOptions = {
     format: 'image/png',
 };
 var DroughtWMS = L.tileLayer.wms("http://ndmc-001.unl.edu:8080/cgi-bin/mapserv.exe?map=/ms4w/apps/usdm/service/usdm_current_wms.map&", DroughtWMSOptions);
+
 var SMAPWMSOptions = {
-    layers: "https://podpac-s3.s3.amazonaws.com/podpac/pipeline_category.json",
+    layers: "https://podpac-drought-monitor-s3.s3.amazonaws.com/pipeline_category.json",
     transparent: true,
     transparency: true,
     opacity: 0.95,
-    time: '2019-05-18T15:34:05',
+    time: nowdate.toISOString(),
     format: 'image/png'
 };
-var SMAPWMS = L.tileLayer.wms("https://ixlth5auaf.execute-api.us-east-1.amazonaws.com/prod/eval/?", SMAPWMSOptions);
+var SMAPWMS = L.tileLayer.wms("https://ps1dfpoecf.execute-api.us-east-1.amazonaws.com/prod/eval/?", SMAPWMSOptions);
+
+var SMAPSMWMSOptions = {
+    layers: "https://podpac-drought-monitor-s3.s3.amazonaws.com/pipeline_moisture.json",
+    transparent: true,
+    transparency: true,
+    opacity: 0.95,
+    time: nowdate.toISOString(),
+    format: 'image/png'
+};
+var SMAPSMWMS = L.tileLayer.wms("https://ps1dfpoecf.execute-api.us-east-1.amazonaws.com/prod/eval/?", SMAPSMWMSOptions);
 
 var baseMaps = {
     "OpenStreetMap": OpenStreetMap_Mapnik
 };
 var overlayMaps = {
     "NDMI": DroughtWMS,
-    "SMAP DMI": SMAPWMS
+    "SMAP DMI": SMAPWMS,
+    "SMAP VSM": SMAPSMWMS
 };
 
 // Initial leaflet MAP
