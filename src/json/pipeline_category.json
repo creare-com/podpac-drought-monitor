@@ -1,281 +1,363 @@
 {
-    "nodes": {
-        "DroughtMonitorCategory": {
-            "node": "datalib.drought_monitor.DroughtMonitorCategory",
-            "attrs": {
-                "altkey": "alt",
-                "crs": null,
-                "datakey": "d0",
-                "latkey": "lat",
-                "lonkey": "lon",
-                "timekey": "time"
-            },
-            "source": "s3://podpac-internal-test/drought_parameters.zarr",
-            "interpolation": "nearest"
+    "DroughtMonitorCategory": {
+        "node": "datalib.drought_monitor.DroughtMonitorCategory",
+        "attrs": {
+            "altkey": "alt",
+            "crs": null,
+            "datakey": "d0",
+            "file_mode": "r",
+            "latkey": "lat",
+            "lonkey": "lon",
+            "timekey": "time"
         },
-        "YearSubstituteCoordinates": {
-            "node": "core.algorithm.coord_select.YearSubstituteCoordinates",
-            "attrs": {
-                "substitute_eval_coords": true,
-                "year": "2018"
-            },
-            "inputs": {
-                "source": "DroughtMonitorCategory"
-            }
+        "style": {
+            "colormap": "gist_earth_r",
+            "clim": [
+                0,
+                0.6
+            ]
         },
-        "DroughtMonitorCategory_1": {
-            "node": "datalib.drought_monitor.DroughtMonitorCategory",
-            "attrs": {
-                "altkey": "alt",
-                "crs": null,
-                "datakey": "d1",
-                "latkey": "lat",
-                "lonkey": "lon",
-                "timekey": "time"
-            },
-            "source": "s3://podpac-internal-test/drought_parameters.zarr",
-            "interpolation": "nearest"
+        "source": "s3://podpac-internal-test/drought_parameters.zarr",
+        "interpolation": "nearest"
+    },
+    "YearSubstituteCoordinates": {
+        "node": "core.algorithm.coord_select.YearSubstituteCoordinates",
+        "attrs": {
+            "substitute_eval_coords": true,
+            "year": "2018"
         },
-        "YearSubstituteCoordinates_1": {
-            "node": "core.algorithm.coord_select.YearSubstituteCoordinates",
-            "attrs": {
-                "substitute_eval_coords": true,
-                "year": "2018"
-            },
-            "inputs": {
-                "source": "DroughtMonitorCategory_1"
-            }
-        },
-        "DroughtMonitorCategory_2": {
-            "node": "datalib.drought_monitor.DroughtMonitorCategory",
-            "attrs": {
-                "altkey": "alt",
-                "crs": null,
-                "datakey": "d2",
-                "latkey": "lat",
-                "lonkey": "lon",
-                "timekey": "time"
-            },
-            "source": "s3://podpac-internal-test/drought_parameters.zarr",
-            "interpolation": "nearest"
-        },
-        "YearSubstituteCoordinates_2": {
-            "node": "core.algorithm.coord_select.YearSubstituteCoordinates",
-            "attrs": {
-                "substitute_eval_coords": true,
-                "year": "2018"
-            },
-            "inputs": {
-                "source": "DroughtMonitorCategory_2"
-            }
-        },
-        "DroughtMonitorCategory_3": {
-            "node": "datalib.drought_monitor.DroughtMonitorCategory",
-            "attrs": {
-                "altkey": "alt",
-                "crs": null,
-                "datakey": "d3",
-                "latkey": "lat",
-                "lonkey": "lon",
-                "timekey": "time"
-            },
-            "source": "s3://podpac-internal-test/drought_parameters.zarr",
-            "interpolation": "nearest"
-        },
-        "YearSubstituteCoordinates_3": {
-            "node": "core.algorithm.coord_select.YearSubstituteCoordinates",
-            "attrs": {
-                "substitute_eval_coords": true,
-                "year": "2018"
-            },
-            "inputs": {
-                "source": "DroughtMonitorCategory_3"
-            }
-        },
-        "DroughtMonitorCategory_4": {
-            "node": "datalib.drought_monitor.DroughtMonitorCategory",
-            "attrs": {
-                "altkey": "alt",
-                "crs": null,
-                "datakey": "d4",
-                "latkey": "lat",
-                "lonkey": "lon",
-                "timekey": "time"
-            },
-            "source": "s3://podpac-internal-test/drought_parameters.zarr",
-            "interpolation": "nearest"
-        },
-        "YearSubstituteCoordinates_4": {
-            "node": "core.algorithm.coord_select.YearSubstituteCoordinates",
-            "attrs": {
-                "substitute_eval_coords": true,
-                "year": "2018"
-            },
-            "inputs": {
-                "source": "DroughtMonitorCategory_4"
-            }
-        },
-        "Zarr": {
-            "node": "core.data.types.Zarr",
-            "attrs": {
-                "altkey": "alt",
-                "cf_calendar": "proleptic_gregorian",
-                "cf_time": true,
-                "cf_units": "days since 2000-01-01",
-                "crs": "epsg:6933",
-                "datakey": "Soil_Moisture_Retrieval_Data_AM_soil_moisture",
-                "dims": [
-                    "time",
-                    "lat",
-                    "lon"
-                ],
-                "latkey": "fakedim0",
-                "lonkey": "fakedim1",
-                "timekey": "time"
-            },
-            "source": "s3://podpac-internal-test/SPL3SMP_E.002_9km_aid0001.zarr",
-            "interpolation": "nearest"
-        },
-        "Zarr_1": {
-            "node": "core.data.types.Zarr",
-            "attrs": {
-                "altkey": "alt",
-                "cf_calendar": "proleptic_gregorian",
-                "cf_time": true,
-                "cf_units": "days since 2000-01-01",
-                "crs": "epsg:6933",
-                "datakey": "Soil_Moisture_Retrieval_Data_AM_retrieval_qual_flag",
-                "dims": [
-                    "time",
-                    "lat",
-                    "lon"
-                ],
-                "latkey": "fakedim0",
-                "lonkey": "fakedim1",
-                "timekey": "time"
-            },
-            "source": "s3://podpac-internal-test/SPL3SMP_E.002_9km_aid0001.zarr",
-            "interpolation": "nearest"
-        },
-        "Arithmetic": {
-            "node": "core.algorithm.algorithm.Arithmetic",
-            "attrs": {
-                "eqn": "((B <= 1) / (B <= 1)) * A ",
-                "params": {}
-            },
-            "inputs": {
-                "A": "Zarr",
-                "B": "Zarr_1"
-            }
-        },
-        "Zarr_2": {
-            "node": "core.data.types.Zarr",
-            "attrs": {
-                "altkey": "alt",
-                "cf_calendar": "proleptic_gregorian",
-                "cf_time": true,
-                "cf_units": "days since 2000-01-01",
-                "crs": "epsg:6933",
-                "datakey": "Soil_Moisture_Retrieval_Data_PM_soil_moisture_pm",
-                "dims": [
-                    "time",
-                    "lat",
-                    "lon"
-                ],
-                "latkey": "fakedim0",
-                "lonkey": "fakedim1",
-                "timekey": "time"
-            },
-            "source": "s3://podpac-internal-test/SPL3SMP_E.002_9km_aid0001.zarr",
-            "interpolation": "nearest"
-        },
-        "Zarr_3": {
-            "node": "core.data.types.Zarr",
-            "attrs": {
-                "altkey": "alt",
-                "cf_calendar": "proleptic_gregorian",
-                "cf_time": true,
-                "cf_units": "days since 2000-01-01",
-                "crs": "epsg:6933",
-                "datakey": "Soil_Moisture_Retrieval_Data_PM_retrieval_qual_flag_pm",
-                "dims": [
-                    "time",
-                    "lat",
-                    "lon"
-                ],
-                "latkey": "fakedim0",
-                "lonkey": "fakedim1",
-                "timekey": "time"
-            },
-            "source": "s3://podpac-internal-test/SPL3SMP_E.002_9km_aid0001.zarr",
-            "interpolation": "nearest"
-        },
-        "Arithmetic_1": {
-            "node": "core.algorithm.algorithm.Arithmetic",
-            "attrs": {
-                "eqn": "((B <= 1) / (B <= 1)) * A ",
-                "params": {}
-            },
-            "inputs": {
-                "A": "Zarr_2",
-                "B": "Zarr_3"
-            }
-        },
-        "Zarr_4": {
-            "node": "core.data.types.Zarr",
-            "attrs": {
-                "altkey": "alt",
-                "cf_calendar": "proleptic_gregorian",
-                "cf_time": true,
-                "cf_units": "days since 2000-01-01",
-                "crs": "epsg:6933",
-                "datakey": "Geophysical_Data_sm_surface",
-                "dims": [
-                    "time",
-                    "lat",
-                    "lon"
-                ],
-                "latkey": "fakedim0",
-                "lonkey": "fakedim1",
-                "timekey": "time"
-            },
-            "source": "s3://podpac-internal-test/SPL4SMGP.004_9km_aid0001.zarr",
-            "interpolation": "nearest"
-        },
-        "OrderedCompositor": {
-            "node": "core.compositor.OrderedCompositor",
-            "attrs": {
-                "source": "SMAP L3 AM/PM Combined"
-            },
-            "sources": [
-                "Arithmetic",
-                "Arithmetic_1",
-                "Zarr_4"
-            ],
-            "interpolation": null
-        },
-        "Arithmetic_2": {
-            "node": "core.algorithm.algorithm.Arithmetic",
-            "attrs": {
-                "eqn": "(F > {d5}) * (F < E) * ((F - {d5}) / (E - {d5}) + 0) + (F > E) * (F < D) * ((F - E) / (D - E) + 1) + (F > D) * (F < C) * ((F - D) / (C - D) + 2) + (F > C) * (F < B) * ((F - C) / (B - C) + 3) + (F > B) * (F < A) * ((F - B) / (A - B) + 4) + (F > A) * (F < {dn}) * ((F - A) / ({dn} - A) + 5) + (F > {dn}) * 5.5",
-                "params": {
-                    "dn": 0.5,
-                    "d5": 0
-                }
-            },
-            "inputs": {
-                "A": "YearSubstituteCoordinates",
-                "B": "YearSubstituteCoordinates_1",
-                "C": "YearSubstituteCoordinates_2",
-                "D": "YearSubstituteCoordinates_3",
-                "E": "YearSubstituteCoordinates_4",
-                "F": "OrderedCompositor"
-            }
+        "inputs": {
+            "source": "DroughtMonitorCategory"
         }
     },
-    
-    "output": { 
-        "format": "json",
-        "mode": "file"
-        }      
+    "DroughtMonitorCategory_1": {
+        "node": "datalib.drought_monitor.DroughtMonitorCategory",
+        "attrs": {
+            "altkey": "alt",
+            "crs": null,
+            "datakey": "d1",
+            "file_mode": "r",
+            "latkey": "lat",
+            "lonkey": "lon",
+            "timekey": "time"
+        },
+        "style": {
+            "colormap": "gist_earth_r",
+            "clim": [
+                0,
+                0.6
+            ]
+        },
+        "source": "s3://podpac-internal-test/drought_parameters.zarr",
+        "interpolation": "nearest"
+    },
+    "YearSubstituteCoordinates_1": {
+        "node": "core.algorithm.coord_select.YearSubstituteCoordinates",
+        "attrs": {
+            "substitute_eval_coords": true,
+            "year": "2018"
+        },
+        "inputs": {
+            "source": "DroughtMonitorCategory_1"
+        }
+    },
+    "DroughtMonitorCategory_2": {
+        "node": "datalib.drought_monitor.DroughtMonitorCategory",
+        "attrs": {
+            "altkey": "alt",
+            "crs": null,
+            "datakey": "d2",
+            "file_mode": "r",
+            "latkey": "lat",
+            "lonkey": "lon",
+            "timekey": "time"
+        },
+        "style": {
+            "colormap": "gist_earth_r",
+            "clim": [
+                0,
+                0.6
+            ]
+        },
+        "source": "s3://podpac-internal-test/drought_parameters.zarr",
+        "interpolation": "nearest"
+    },
+    "YearSubstituteCoordinates_2": {
+        "node": "core.algorithm.coord_select.YearSubstituteCoordinates",
+        "attrs": {
+            "substitute_eval_coords": true,
+            "year": "2018"
+        },
+        "inputs": {
+            "source": "DroughtMonitorCategory_2"
+        }
+    },
+    "DroughtMonitorCategory_3": {
+        "node": "datalib.drought_monitor.DroughtMonitorCategory",
+        "attrs": {
+            "altkey": "alt",
+            "crs": null,
+            "datakey": "d3",
+            "file_mode": "r",
+            "latkey": "lat",
+            "lonkey": "lon",
+            "timekey": "time"
+        },
+        "style": {
+            "colormap": "gist_earth_r",
+            "clim": [
+                0,
+                0.6
+            ]
+        },
+        "source": "s3://podpac-internal-test/drought_parameters.zarr",
+        "interpolation": "nearest"
+    },
+    "YearSubstituteCoordinates_3": {
+        "node": "core.algorithm.coord_select.YearSubstituteCoordinates",
+        "attrs": {
+            "substitute_eval_coords": true,
+            "year": "2018"
+        },
+        "inputs": {
+            "source": "DroughtMonitorCategory_3"
+        }
+    },
+    "DroughtMonitorCategory_4": {
+        "node": "datalib.drought_monitor.DroughtMonitorCategory",
+        "attrs": {
+            "altkey": "alt",
+            "crs": null,
+            "datakey": "d4",
+            "file_mode": "r",
+            "latkey": "lat",
+            "lonkey": "lon",
+            "timekey": "time"
+        },
+        "style": {
+            "colormap": "gist_earth_r",
+            "clim": [
+                0,
+                0.6
+            ]
+        },
+        "source": "s3://podpac-internal-test/drought_parameters.zarr",
+        "interpolation": "nearest"
+    },
+    "YearSubstituteCoordinates_4": {
+        "node": "core.algorithm.coord_select.YearSubstituteCoordinates",
+        "attrs": {
+            "substitute_eval_coords": true,
+            "year": "2018"
+        },
+        "inputs": {
+            "source": "DroughtMonitorCategory_4"
+        }
+    },
+    "Zarr": {
+        "node": "core.data.types.Zarr",
+        "attrs": {
+            "altkey": "alt",
+            "cf_calendar": "proleptic_gregorian",
+            "cf_time": true,
+            "cf_units": "days since 2000-01-01",
+            "crs": "epsg:6933",
+            "datakey": "Soil_Moisture_Retrieval_Data_AM_soil_moisture",
+            "dims": [
+                "time",
+                "lat",
+                "lon"
+            ],
+            "file_mode": "r",
+            "latkey": "fakedim0",
+            "lonkey": "fakedim1",
+            "timekey": "time"
+        },
+        "source": "s3://podpac-internal-test/SPL3SMP_E.002_9km_aid0001.zarr",
+        "interpolation": "nearest"
+    },
+    "Zarr_1": {
+        "node": "core.data.types.Zarr",
+        "attrs": {
+            "altkey": "alt",
+            "cf_calendar": "proleptic_gregorian",
+            "cf_time": true,
+            "cf_units": "days since 2000-01-01",
+            "crs": "epsg:6933",
+            "datakey": "Soil_Moisture_Retrieval_Data_AM_retrieval_qual_flag",
+            "dims": [
+                "time",
+                "lat",
+                "lon"
+            ],
+            "file_mode": "r",
+            "latkey": "fakedim0",
+            "lonkey": "fakedim1",
+            "timekey": "time"
+        },
+        "source": "s3://podpac-internal-test/SPL3SMP_E.002_9km_aid0001.zarr",
+        "interpolation": "nearest"
+    },
+    "Arithmetic": {
+        "node": "core.algorithm.generic.Arithmetic",
+        "attrs": {
+            "eqn": "((B <= 1) / (B <= 1)) * A ",
+            "params": {}
+        },
+        "inputs": {
+            "A": "Zarr",
+            "B": "Zarr_1"
+        }
+    },
+    "Zarr_2": {
+        "node": "core.data.types.Zarr",
+        "attrs": {
+            "altkey": "alt",
+            "cf_calendar": "proleptic_gregorian",
+            "cf_time": true,
+            "cf_units": "days since 2000-01-01",
+            "crs": "epsg:6933",
+            "datakey": "Soil_Moisture_Retrieval_Data_PM_soil_moisture_pm",
+            "dims": [
+                "time",
+                "lat",
+                "lon"
+            ],
+            "file_mode": "r",
+            "latkey": "fakedim0",
+            "lonkey": "fakedim1",
+            "timekey": "time"
+        },
+        "source": "s3://podpac-internal-test/SPL3SMP_E.002_9km_aid0001.zarr",
+        "interpolation": "nearest"
+    },
+    "Zarr_3": {
+        "node": "core.data.types.Zarr",
+        "attrs": {
+            "altkey": "alt",
+            "cf_calendar": "proleptic_gregorian",
+            "cf_time": true,
+            "cf_units": "days since 2000-01-01",
+            "crs": "epsg:6933",
+            "datakey": "Soil_Moisture_Retrieval_Data_PM_retrieval_qual_flag_pm",
+            "dims": [
+                "time",
+                "lat",
+                "lon"
+            ],
+            "file_mode": "r",
+            "latkey": "fakedim0",
+            "lonkey": "fakedim1",
+            "timekey": "time"
+        },
+        "source": "s3://podpac-internal-test/SPL3SMP_E.002_9km_aid0001.zarr",
+        "interpolation": "nearest"
+    },
+    "Arithmetic_1": {
+        "node": "core.algorithm.generic.Arithmetic",
+        "attrs": {
+            "eqn": "((B <= 1) / (B <= 1)) * A ",
+            "params": {}
+        },
+        "inputs": {
+            "A": "Zarr_2",
+            "B": "Zarr_3"
+        }
+    },
+    "Zarr_4": {
+        "node": "core.data.types.Zarr",
+        "attrs": {
+            "altkey": "alt",
+            "cf_calendar": "proleptic_gregorian",
+            "cf_time": true,
+            "cf_units": "days since 2000-01-01",
+            "crs": "epsg:6933",
+            "datakey": "Geophysical_Data_sm_surface",
+            "dims": [
+                "time",
+                "lat",
+                "lon"
+            ],
+            "file_mode": "r",
+            "latkey": "fakedim0",
+            "lonkey": "fakedim1",
+            "timekey": "time"
+        },
+        "source": "s3://podpac-internal-test/SPL4SMGP.004_9km_aid0001.zarr",
+        "interpolation": "nearest"
+    },
+    "OrderedCompositor": {
+        "node": "core.compositor.OrderedCompositor",
+        "attrs": {
+            "source": "SMAP L3 AM/PM Combined"
+        },
+        "style": {
+            "colormap": "gist_earth_r",
+            "clim": [
+                0,
+                0.5
+            ]
+        },
+        "sources": [
+            "Arithmetic",
+            "Arithmetic_1",
+            "Zarr_4"
+        ],
+        "interpolation": null
+    },
+    "DroughtCategory": {
+        "node": "datalib.drought_monitor.DroughtCategory",
+        "style": {
+            "enumeration_colors": [
+                [
+                    0.45098039,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                [
+                    0.90196078,
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                [
+                    1.0,
+                    0.66666667,
+                    0.0,
+                    1.0
+                ],
+                [
+                    0.98823529,
+                    0.82745098,
+                    0.49803922,
+                    1.0
+                ],
+                [
+                    1.0,
+                    1.0,
+                    0.0,
+                    1.0
+                ],
+                [
+                    1.0,
+                    1.0,
+                    1.0,
+                    0.0
+                ]
+            ],
+            "clim": [
+                0,
+                6
+            ]
+        },
+        "inputs": {
+            "d0": "YearSubstituteCoordinates",
+            "d1": "YearSubstituteCoordinates_1",
+            "d2": "YearSubstituteCoordinates_2",
+            "d3": "YearSubstituteCoordinates_3",
+            "d4": "YearSubstituteCoordinates_4",
+            "soil_moisture": "OrderedCompositor"
+        }
+    }
 }

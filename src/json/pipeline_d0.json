@@ -1,31 +1,33 @@
 {
-    "nodes": {
-        "DroughtMonitorCategory": {
-            "node": "datalib.drought_monitor.DroughtMonitorCategory",
-            "attrs": {
-                "altkey": "alt",
-                "crs": null,
-                "datakey": "d0",
-                "latkey": "lat",
-                "lonkey": "lon",
-                "timekey": "time"
-            },
-            "source": "s3://podpac-internal-test/drought_parameters.zarr",
-            "interpolation": "nearest"
+    "DroughtMonitorCategory": {
+        "node": "datalib.drought_monitor.DroughtMonitorCategory",
+        "attrs": {
+            "altkey": "alt",
+            "crs": null,
+            "datakey": "d0",
+            "file_mode": "r",
+            "latkey": "lat",
+            "lonkey": "lon",
+            "timekey": "time"
         },
-        "YearSubstituteCoordinates": {
-            "node": "core.algorithm.coord_select.YearSubstituteCoordinates",
-            "attrs": {
-                "substitute_eval_coords": true,
-                "year": "2018"
-            },
-            "inputs": {
-                "source": "DroughtMonitorCategory"
-            }
-        }
+        "style": {
+            "colormap": "gist_earth_r",
+            "clim": [
+                0,
+                0.6
+            ]
+        },
+        "source": "s3://podpac-internal-test/drought_parameters.zarr",
+        "interpolation": "nearest"
     },
-    "output": { 
-        "format": "json",
-        "mode": "file"
+    "YearSubstituteCoordinates": {
+        "node": "core.algorithm.coord_select.YearSubstituteCoordinates",
+        "attrs": {
+            "substitute_eval_coords": true,
+            "year": "2018"
+        },
+        "inputs": {
+            "source": "DroughtMonitorCategory"
+        }
     }
 }

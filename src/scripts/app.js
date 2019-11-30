@@ -1,11 +1,14 @@
 var currentPage = 'map';
 var currentAxisType = 'ndmi';
+var nowdate = new Date();
+nowdate.setDate(nowdate.getDate() - 7);
 
 // First time run functions
 var geolocation = null;
 var old_geolocation = [null, null];
 var rawData = null;
 var marker = null;
+var settings = {};
 var coords = null;
 var coords2 = null;
 
@@ -20,33 +23,42 @@ var pipeline_d4 = null;
 var test_pipeline = null
 
 var PODPACcfg = {
-    s3: null,
-    inFolder: "esip_input2",
-    outFolder: 'esip_output2'
+    params: {
+        FunctionName : 'podpac-drought-monitor-lambda',
+//         InvocationType : 'Event',
+        InvocationType : 'RequestResponse',
+        LogType : 'None'
+    },
+    lambda: null,
+    settings: {}
 };
 
-// S3 Configuration
-var lambdaS3Bucket = 'podpac-s3';
-var s3 = null;
-$.getJSON('json/config.json', function(json) {
-    AWS.config.update(json);
-    s3 = new AWS.S3({
-        apiVersion: '2006-03-01',
-        params: {
-            Bucket: lambdaS3Bucket
-        }
-    });
-    PODPACcfg.s3 = s3;
+// Lambda Configuration
+AWS.config.region = 'us-east-1'
+AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+    IdentityPoolId: 'us-east-1:6d5095bc-b9b6-42a7-ae6e-03b74431d949',
 });
+PODPACcfg.lambda = new AWS.Lambda({
+    apiVersion: '2015-03-31'
+});
+ 
+
+// PODPAC Settings
+$.getJSON('json/settings.json', function(json) {
+    settings = json;
+    PODPACcfg.settings = settings;
+});
+
+// APPLICATION JSON
 
 $.getJSON('json/coords_template.json', function(json) {
     coords = json;
     get_data(geolocation, rawData);
-})
+});
 $.getJSON('json/coords_template2.json', function(json) {
     coords2 = json;
     get_data(geolocation, rawData);
-})
+});
 
 $.getJSON('json/pipeline_category.json', function(json) {
     pipeline_category = json;
@@ -55,27 +67,27 @@ $.getJSON('json/pipeline_category.json', function(json) {
 $.getJSON('json/pipeline_moisture.json', function(json) {
     pipeline_moisture = json;
     get_data(geolocation, rawData);
-})
+});
 $.getJSON('json/pipeline_d0.json', function(json) {
     pipeline_d0 = json;
     get_data(geolocation, rawData);
-})
+});
 $.getJSON('json/pipeline_d1.json', function(json) {
     pipeline_d1 = json;
     get_data(geolocation, rawData);
-})
+});
 $.getJSON('json/pipeline_d2.json', function(json) {
     pipeline_d2 = json;
     get_data(geolocation, rawData);
-})
+});
 $.getJSON('json/pipeline_d3.json', function(json) {
     pipeline_d3 = json;
     get_data(geolocation, rawData);
-})
+});
 $.getJSON('json/pipeline_d4.json', function(json) {
     pipeline_d4 = json;
     get_data(geolocation, rawData);
-})
+});
 
 $("#map").css("height", get_height());
 
@@ -93,15 +105,37 @@ var DroughtWMSOptions = {
     transparent: true,
     transparency: true,
     opacity: 0.95,
-    format: 'image/png'
+    format: 'image/png',
 };
 var DroughtWMS = L.tileLayer.wms("http://ndmc-001.unl.edu:8080/cgi-bin/mapserv.exe?map=/ms4w/apps/usdm/service/usdm_current_wms.map&", DroughtWMSOptions);
+
+var SMAPWMSOptions = {
+    layers: "https://podpac-drought-monitor-s3.s3.amazonaws.com/pipeline_category.json",
+    transparent: true,
+    transparency: true,
+    opacity: 0.95,
+    time: nowdate.toISOString(),
+    format: 'image/png'
+};
+var SMAPWMS = L.tileLayer.wms("https://ps1dfpoecf.execute-api.us-east-1.amazonaws.com/prod/eval/?", SMAPWMSOptions);
+
+var SMAPSMWMSOptions = {
+    layers: "https://podpac-drought-monitor-s3.s3.amazonaws.com/pipeline_moisture.json",
+    transparent: true,
+    transparency: true,
+    opacity: 0.95,
+    time: nowdate.toISOString(),
+    format: 'image/png'
+};
+var SMAPSMWMS = L.tileLayer.wms("https://ps1dfpoecf.execute-api.us-east-1.amazonaws.com/prod/eval/?", SMAPSMWMSOptions);
 
 var baseMaps = {
     "OpenStreetMap": OpenStreetMap_Mapnik
 };
 var overlayMaps = {
-    "NDMI": DroughtWMS
+    "NDMI": DroughtWMS,
+    "SMAP DMI": SMAPWMS,
+    "SMAP VSM": SMAPSMWMS
 };
 
 // Initial leaflet MAP
