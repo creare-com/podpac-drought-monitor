@@ -16,6 +16,9 @@
             "file_mode": "r",
             "latkey": "fakedim0",
             "lonkey": "fakedim1",
+            "nan_vals": [
+                -9999
+            ],
             "timekey": "time"
         },
         "source": "s3://podpac-internal-test/SPL3SMP_E.002_9km_aid0001.zarr",
@@ -38,6 +41,9 @@
             "file_mode": "r",
             "latkey": "fakedim0",
             "lonkey": "fakedim1",
+            "nan_vals": [
+                -9999
+            ],
             "timekey": "time"
         },
         "source": "s3://podpac-internal-test/SPL3SMP_E.002_9km_aid0001.zarr",
@@ -71,6 +77,9 @@
             "file_mode": "r",
             "latkey": "fakedim0",
             "lonkey": "fakedim1",
+            "nan_vals": [
+                -9999
+            ],
             "timekey": "time"
         },
         "source": "s3://podpac-internal-test/SPL3SMP_E.002_9km_aid0001.zarr",
@@ -93,6 +102,9 @@
             "file_mode": "r",
             "latkey": "fakedim0",
             "lonkey": "fakedim1",
+            "nan_vals": [
+                -9999
+            ],
             "timekey": "time"
         },
         "source": "s3://podpac-internal-test/SPL3SMP_E.002_9km_aid0001.zarr",
@@ -126,6 +138,9 @@
             "file_mode": "r",
             "latkey": "fakedim0",
             "lonkey": "fakedim1",
+            "nan_vals": [
+                -9999
+            ],
             "timekey": "time"
         },
         "source": "s3://podpac-internal-test/SPL4SMGP.004_9km_aid0001.zarr",
