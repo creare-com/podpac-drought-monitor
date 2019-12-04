@@ -94,7 +94,7 @@ def handler(event, context):
         print(" ... Done.")
         new_times = (c.coords['time'].data - time_base).astype('timedelta64[D]')
         for i, nt in enumerate(new_times):
-            if np.any((smap_ds_L4['time'][:] - nt).astype(int) >= 0) or np.all(np.isnan(l4[i])):
+            if np.any((smap_ds_L4['time'][:] - nt).astype(int) >= 0) or np.all(l4[i] == -9999):
                 print('Time already exists, or is all nan -- skipping.')
                 continue
             print("Updating S3 Zarr file for L4 Data.")
@@ -157,7 +157,7 @@ def handler(event, context):
         print(" ... Done.")
         new_times = (c.coords['time'].data - time_base).astype('timedelta64[D]')
         for i, nt in enumerate(new_times):
-            if np.any((smap_ds['time'][:] - nt).astype(int) >= 0) or np.all(np.isnan(l3_am)) or np.all(np.isnan(l3_pm)):
+            if np.any((smap_ds['time'][:] - nt).astype(int) >= 0) or np.all(l3_am[i] == -9999) or np.all(l3_pm[i] == -9999):
                 print('Time already exists, or is all nan -- skipping.')
                 continue
 
