@@ -29,7 +29,11 @@ function getPODPACLambda(cfg, pipeline, coordinates, name, rData) {
         else {
             let json = data.Payload;
             json = json.replace(/NaN/g, 'null');
-            addRawData(rData, JSON.parse(JSON.parse(json)), name);
+            try {
+                addRawData(rData, JSON.parse(JSON.parse(json)), name);
+            } catch {
+                console.log(json);
+            }
         }
     }
 
@@ -732,11 +736,11 @@ function makeVLSpec(data, domain, axis) {
             "mark": {
                 "type": "line",
                 "color": "#BB9999",
-                "size": "5",
+                "size": "3",
                 "point": {
                     "type": "square",
                     "color": "#BB9999",
-                    "size": "200"
+                    "size": "75"
                 }
             },
             "selection": {
