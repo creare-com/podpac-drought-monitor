@@ -397,20 +397,20 @@ function updatePlot(axisType) {
         old_geolocation = geolocation;
     }
 
-    var data = null;
-    var domain = null;
-    var axis = {
+    let plot_data = null;
+    let domain = null;
+    let axis = {
         "labelFontSize": 24,
         "titleFontSize": 24,
     }
     if (currentAxisType === "ndmi") {
-        data = soilmoistureToNDMI(rawData);
+        plot_data = soilmoistureToNDMI(rawData);
         domain = [0, 6];
         axis.title = "Drought Category";
         axis.tickCount = 0;
 
     } else if (currentAxisType === "sm") {
-        data = NDMIToSoilmoisture(rawData);
+        plot_data = NDMIToSoilmoisture(rawData);
         //                     domain = [Math.min.apply(Math, rawData.SMAP.map(function(o) {
         //                         if (o.moisture === undefined) {
         //                             return 1;
@@ -431,7 +431,7 @@ function updatePlot(axisType) {
                 return o.moisture;
             }
         }));
-        let ndmiMax = Math.max.apply(Math, data.values.map(function(o) {
+        let ndmiMax = Math.max.apply(Math, plot_data.values.map(function(o) {
             if (o.NDMI == undefined) {
                 return 0;
             } else {
@@ -443,7 +443,7 @@ function updatePlot(axisType) {
         axis.tickCount = 5;
     }
 
-    var vlSpec = makeVLSpec(data, domain, axis);
+    let vlSpec = makeVLSpec(plot_data, domain, axis);
 
     // Embed the visualization in the container with id `vis`
     vegaEmbed('#vis', vlSpec);
@@ -451,7 +451,7 @@ function updatePlot(axisType) {
 
 // Makes the JSON spec for the Vega-lite plot
 function makeVLSpec(data, domain, axis) {
-    var vlSpec = {
+    let vlSpec = {
         $schema: 'https://vega.github.io/schema/vega-lite/v3.json',
         "width": $('#plot').width(),
         "height": get_height()*.7,
