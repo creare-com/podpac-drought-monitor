@@ -48,8 +48,9 @@ function getPODPACLambda(cfg, pipeline, coordinates, name, rData) {
             'coordinates': coordinates,
             'settings': cfg.settings
         });
-        let params = cfg.params;
+        let params = JSON.parse(JSON.stringify(cfg.params));
         params['Payload'] = pipeline_json;
+        console.log(name);
         console.log(params);
         cfg.lambda.invoke(params, func);
     }
