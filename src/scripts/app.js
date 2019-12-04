@@ -133,9 +133,9 @@ var baseMaps = {
     "OpenStreetMap": OpenStreetMap_Mapnik
 };
 var overlayMaps = {
-    "NDMI": DroughtWMS,
+    "SMAP VSM": SMAPSMWMS,
     "SMAP DMI": SMAPWMS,
-    "SMAP VSM": SMAPSMWMS
+    "NDMI": DroughtWMS
 };
 
 // Initial leaflet MAP
@@ -145,6 +145,8 @@ var map = L.map('map', {
     layers: [OpenStreetMap_Mapnik]
 });
 L.control.layers(baseMaps, overlayMaps).addTo(map);
+// Set default layers
+map.addLayer(SMAPWMS);
 
 // Set up listeners etc. to handle specification for the markers
 map.on('click', function(e) {
