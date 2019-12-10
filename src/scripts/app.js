@@ -44,10 +44,10 @@ PODPACcfg.lambda = new AWS.Lambda({
  
 
 // PODPAC Settings
-$.getJSON('json/settings.json', function(json) {
-    settings = json;
-    PODPACcfg.settings = settings;
-});
+// $.getJSON('json/settings.json', function(json) {
+//     settings = json;
+//     PODPACcfg.settings = settings;
+// });
 
 // APPLICATION JSON
 
@@ -60,11 +60,11 @@ $.getJSON('json/coords_template2.json', function(json) {
     get_data(geolocation, rawData);
 });
 
-$.getJSON('json/pipeline_category.json', function(json) {
+$.getJSON('json/pipeline_category_l3am.json', function(json) {
     pipeline_category = json;
     get_data(geolocation, rawData);
 })
-$.getJSON('json/pipeline_moisture.json', function(json) {
+$.getJSON('json/pipeline_moisture_l3am.json', function(json) {
     pipeline_moisture = json;
     get_data(geolocation, rawData);
 });
