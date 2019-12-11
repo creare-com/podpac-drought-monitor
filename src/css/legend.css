@@ -2,6 +2,8 @@
 #legend {
     position: fixed;
     bottom: 20px;
+    width: 300px;
+    padding-top: 6px;
     right: 5px;
     z-index: 9999;
     background-color: white;
@@ -10,10 +12,21 @@
     border: 1px solid black;
 }
 
+#VSM-title {
+    margin-left: -1em;
+}
+
+#gist-earth {
+    width: 15em;
+    height: 1em;
+    margin-left: -1em;
+    border-style: solid;
+    border-width: thin;
+}
+
 ul.legend-list {
     list-style: none!important;
-    margin-left: 0!important;
-
+    margin-bottom: 0rem;
 }
 
 .dcatbox {

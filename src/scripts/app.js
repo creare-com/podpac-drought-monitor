@@ -1,7 +1,7 @@
 var currentPage = 'map';
 var currentAxisType = 'ndmi';
 var nowdate = new Date();
-nowdate.setDate(nowdate.getDate() - 7);
+nowdate.setDate(nowdate.getDate() - 2);
 
 // First time run functions
 var geolocation = null;
