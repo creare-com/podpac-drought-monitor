@@ -81,7 +81,7 @@ function get_data(geolocation, rawData) {
 
     var nowdate = new Date();
     var offsetdate = new Date();
-    offsetdate.setMonth(Math.max(0, nowdate.getMonth() - 3));
+    offsetdate.setMonth(Math.max(-3, nowdate.getMonth() - 3));
 
     var enddate = nowdate.toLocaleDateString();
     var startdate = offsetdate.toLocaleDateString();
