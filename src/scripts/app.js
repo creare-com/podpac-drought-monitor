@@ -134,8 +134,8 @@ var baseMaps = {
 };
 var overlayMaps = {
     "SMAP VSM": SMAPSMWMS,
-    "SMAP DMI": SMAPWMS,
-    "NDMI": DroughtWMS
+    "NDMI": DroughtWMS,
+    "SMAP DMI": SMAPWMS
 };
 
 // Initial leaflet MAP
@@ -144,9 +144,10 @@ var map = L.map('map', {
     zoom: 4,
     layers: [OpenStreetMap_Mapnik]
 });
-L.control.layers(baseMaps, overlayMaps).addTo(map);
+L.control.layers(baseMaps, overlayMaps,{collapsed:false}).addTo(map);
 // Set default layers
 map.addLayer(SMAPWMS);
+map.addLayer(DroughtWMS);
 
 // Set up listeners etc. to handle specification for the markers
 map.on('click', function(e) {
@@ -156,7 +157,7 @@ map.on('click', function(e) {
     $("#lat")[0].value = coords['lat'];
     $("#lon")[0].value = coords['lng'];
     updatePlot();
-    setPage('plot');
+    // setPage('plot');
 })
 
 // Update the map on first entry
