@@ -142,12 +142,9 @@ var overlayMaps = {
 var map = L.map('map', {
     center: [42, -100.0],
     zoom: 4,
-    layers: [OpenStreetMap_Mapnik]
+    layers: [OpenStreetMap_Mapnik],
 });
 L.control.layers(baseMaps, overlayMaps,{collapsed:false}).addTo(map);
-// Set default layers
-map.addLayer(SMAPWMS);
-map.addLayer(DroughtWMS);
 
 // Set up listeners etc. to handle specification for the markers
 map.on('click', function(e) {
@@ -157,8 +154,23 @@ map.on('click', function(e) {
     $("#lat")[0].value = coords['lat'];
     $("#lon")[0].value = coords['lng'];
     updatePlot();
+    updateMap();
     // setPage('plot');
-})
+});
+
+var loadingControl = L.Control.loading({
+    separate: true
+});
+map.addControl(loadingControl);
+
+SMAPWMS.on('loading', function(e) { loadingControl._showIndicator() });
+SMAPWMS.on('load', function(e) { loadingControl._hideIndicator() });
+SMAPSMWMS.on('loading', function(e) { loadingControl._showIndicator() });
+SMAPSMWMS.on('load', function(e) { loadingControl._hideIndicator() });
+
+// Set default layers
+map.addLayer(DroughtWMS);
+map.addLayer(SMAPWMS);
 
 // Update the map on first entry
 updateMap();
