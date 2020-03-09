@@ -212,12 +212,15 @@ function soilmoistureToNDMI(data) {
     }
     let SMAPentries = Object.entries(data.SMAP);
     let NDMIentries = Object.entries(data.NDMI);
-    for (var i = 0; i < SMAPentries.length; i++) {
-
+    let i = 0;
+    for (var iii = 0; iii < SMAPentries.length; iii++) {
+        if (SMAPentries[iii][1].category == null){
+            continue;
+        }
         outData.values.push({});
 
-        if (SMAPentries[i][1].category !== undefined) {
-            outData.values[i].moisture = SMAPentries[i][1].category;
+        if (SMAPentries[iii][1].category !== undefined) {
+            outData.values[i].moisture = SMAPentries[iii][1].category;
         }
 
         outData.values[i].d5 = 0;
@@ -227,15 +230,16 @@ function soilmoistureToNDMI(data) {
         outData.values[i].d1 = 4;
         outData.values[i].d0 = 5;
         outData.values[i].dn = 6;
-        outData.values[i].date1 = SMAPentries[i][0];
-
+        outData.values[i].date1 = SMAPentries[iii][0];
+        i = i + 1;
     }
-    for (var i = 0; i < NDMIentries.length; i++) {
+    
+    for (var iii = 0; iii < NDMIentries.length; iii++) {
         outData.values.push({});
 
         // No conversion needed
-        outData.values[i].NDMI = NDMIentries[i][1].NDMI;
-        outData.values[i].date = NDMIentries[i][0];
+        outData.values[iii].NDMI = NDMIentries[iii][1].NDMI;
+        outData.values[iii].date = NDMIentries[iii][0];
     }
     return outData;
 }
@@ -267,19 +271,24 @@ function NDMIToSoilmoisture(data) {
         outData.values[i].date = NDMIentries[i][0];
 
     }
+    let iii = 0;
     for (var i = 0; i < SMAPentries.length; i++) {
-        outData.values.push({});
-        if (SMAPentries[i][1].moisture !== undefined) {
-            outData.values[i].moisture = SMAPentries[i][1].moisture;
+        if (SMAPentries[i][1].moisture == null){
+            continue;
         }
-        outData.values[i].d5 = 0;
-        outData.values[i].d4 = SMAPentries[i][1].d4;
-        outData.values[i].d3 = SMAPentries[i][1].d3;
-        outData.values[i].d2 = SMAPentries[i][1].d2;
-        outData.values[i].d1 = SMAPentries[i][1].d1;
-        outData.values[i].d0 = SMAPentries[i][1].d0;
-        outData.values[i].dn = 0.5;
-        outData.values[i].date1 = SMAPentries[i][0];
+        outData.values.push({});
+        if (SMAPentries[iii][1].moisture !== undefined) {
+            outData.values[iii].moisture = SMAPentries[i][1].moisture;
+        }
+        outData.values[iii].d5 = 0;
+        outData.values[iii].d4 = SMAPentries[i][1].d4;
+        outData.values[iii].d3 = SMAPentries[i][1].d3;
+        outData.values[iii].d2 = SMAPentries[i][1].d2;
+        outData.values[iii].d1 = SMAPentries[i][1].d1;
+        outData.values[iii].d0 = SMAPentries[i][1].d0;
+        outData.values[iii].dn = 0.5;
+        outData.values[iii].date1 = SMAPentries[i][0];
+        iii = iii + 1;
     }
     return outData;
 }
@@ -440,7 +449,7 @@ function updatePlot(axisType) {
             }
         }));
         domain = [0, Math.max(ndmiMax, smapMax)];
-        axis.title = "Soil Moisture";
+        axis.title = "Soil Moisture (m³/m³)";
         axis.tickCount = 5;
     }
 

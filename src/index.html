@@ -31,6 +31,9 @@
         <!-- Leaflet -->
         <!-- Note: Leafletjs MUST be loaded AFTER Leaflet's CSS -->
         <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js" integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og==" crossorigin=""></script>
+        <!-- Include the leaflet loading control -->
+        <link rel="stylesheet" href="css/Control.Loading.css" />
+        <script src="scripts/Control.Loading.js"></script>
         <!-- Drought-Monitor scripts loaded after the <body> tag below -->
     </head>
     <body>
@@ -71,10 +74,10 @@
         <div id="plot" class="plot container mt-2">
             <h2 class="mb-4 mt-2">Time Series</h2>
             <div class="row">
-                <div class="col-2">
+                <div class="col-2" style="max-width:fit-content;">
                     <button id="ndmi-button" type="button" class="btn btn-outline-secondary btn-block active" onclick="updatePlot('ndmi')">NDMI</button>
                 </div>
-                <div class="col-2">
+                <div class="col-2" style="max-width:fit-content;">
                     <button id="sm-button" type="button" class="btn btn-outline-secondary btn-block" onclick="updatePlot('sm')">Soil Moisture</button>
                 </div>
             </div>
@@ -107,31 +110,30 @@
         </div>
         <!-- Legend -->
         <div id="legend">
-            <h4 class="mb-2 d-flex justify-content-center">Legend</h4>
-            <ul class="legend-list">
+            <div class="row collapse show" id="collapseExample"><ul class="legend-list">
                 <li>
                     <span class="dcatbox usdm-dnone"></span>
                     <strong>None</strong>
                 </li>
                 <li>
                     <span class="dcatbox usdm-d0"></span>
-                    <strong>D0</strong>
+                    <strong>D0 (Abnormally Dry)</strong>
                 </li>
                 <li>
                     <span class="dcatbox usdm-d1"></span>
-                    <strong>D1</strong>
+                    <strong>D1 (Moderate Drought)</strong>
                 </li>
                 <li>
                     <span class="dcatbox usdm-d2"></span>
-                    <strong>D2</strong>
+                    <strong>D2 (Severe Drought)</strong>
                 </li>
                 <li>
                     <span class="dcatbox usdm-d3"></span>
-                    <strong>D3</strong>
+                    <strong>D3 (Extreme Drought)</strong>
                 </li>
                 <li>
                     <span class="dcatbox usdm-d4"></span>
-                    <strong>D4</strong>
+                    <strong>D4 (Exceptional Drought)</strong>
                 </li>
                 <li>
                     <svg viewBox="0 0 40 20" xmlns="http://www.w3.org/2000/svg" class="dcatline">
@@ -159,7 +161,17 @@
                     </svg>
                     <strong>SMAP DMI</strong>
                 </li>
-            </ul>
+                <li>
+                    <strong id="VSM-title"> Volumetric Soil Moisture (m³/m³) </strong><br>
+                    <img src="img/gist_earth.png" id="gist-earth"><br>
+                    <p style="float:left; margin-left: -1.2em;">0</p><p style="float:right">0.6</p>
+                </li>
+            </div></ul>
+            <div class="row justify-content-center"><h4>
+                <a class="btn btn-light" data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+                    Toggle Legend
+                </a>
+            </h4></div>
         </div>
         <div id="message" class="message"></div>
     </body>

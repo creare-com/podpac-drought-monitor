@@ -5,7 +5,7 @@
             "altkey": "alt",
             "crs": null,
             "datakey": "d0",
-            "file_mode": "a",
+            "file_mode": "r",
             "latkey": "lat",
             "lonkey": "lon",
             "nan_vals": [],
@@ -37,7 +37,7 @@
             "altkey": "alt",
             "crs": null,
             "datakey": "d1",
-            "file_mode": "a",
+            "file_mode": "r",
             "latkey": "lat",
             "lonkey": "lon",
             "nan_vals": [],
@@ -69,7 +69,7 @@
             "altkey": "alt",
             "crs": null,
             "datakey": "d2",
-            "file_mode": "a",
+            "file_mode": "r",
             "latkey": "lat",
             "lonkey": "lon",
             "nan_vals": [],
@@ -101,7 +101,7 @@
             "altkey": "alt",
             "crs": null,
             "datakey": "d3",
-            "file_mode": "a",
+            "file_mode": "r",
             "latkey": "lat",
             "lonkey": "lon",
             "nan_vals": [],
@@ -133,7 +133,7 @@
             "altkey": "alt",
             "crs": null,
             "datakey": "d4",
-            "file_mode": "a",
+            "file_mode": "r",
             "latkey": "lat",
             "lonkey": "lon",
             "nan_vals": [],
@@ -221,88 +221,6 @@
             "source": "Zarr_1"
         }
     },
-    "ExpandCoordinates": {
-        "node": "core.algorithm.coord_select.ExpandCoordinates",
-        "attrs": {
-            "alt": [],
-            "lat": [],
-            "lon": [],
-            "time": [
-                "-5,D",
-                "0,D",
-                "1,D"
-            ]
-        },
-        "inputs": {
-            "coordinates_source": "Mask",
-            "source": "Mask"
-        }
-    },
-    "Mean": {
-        "node": "core.algorithm.stats.Mean",
-        "attrs": {
-            "dims": [
-                "time"
-            ]
-        },
-        "inputs": {
-            "source": "ExpandCoordinates"
-        }
-    },
-    "Zarr_2": {
-        "node": "core.data.types.Zarr",
-        "attrs": {
-            "altkey": "alt",
-            "cf_calendar": "proleptic_gregorian",
-            "cf_time": true,
-            "cf_units": "days since 2000-01-01",
-            "crs": "epsg:6933",
-            "datakey": "Geophysical_Data_sm_surface",
-            "dims": [
-                "time",
-                "lat",
-                "lon"
-            ],
-            "file_mode": "r",
-            "latkey": "fakedim0",
-            "lonkey": "fakedim1",
-            "nan_vals": [
-                -9999
-            ],
-            "timekey": "time"
-        },
-        "source": "s3://podpac-internal-test/SPL4SMGP.004_9km_aid0001.zarr",
-        "interpolation": "nearest"
-    },
-    "Mean_1": {
-        "node": "core.algorithm.stats.Mean",
-        "attrs": {
-            "dims": [
-                "time"
-            ]
-        },
-        "inputs": {
-            "source": "Zarr_2"
-        }
-    },
-    "OrderedCompositor": {
-        "node": "core.compositor.OrderedCompositor",
-        "attrs": {
-            "source": "SMAP L3 AM/PM Combined"
-        },
-        "style": {
-            "colormap": "gist_earth_r",
-            "clim": [
-                0,
-                0.5
-            ]
-        },
-        "sources": [
-            "Mean",
-            "Mean_1"
-        ],
-        "interpolation": null
-    },
     "DroughtCategory": {
         "node": "datalib.drought_monitor.DroughtCategory",
         "style": {
@@ -355,7 +273,7 @@
             "d2": "YearSubstituteCoordinates_2",
             "d3": "YearSubstituteCoordinates_3",
             "d4": "YearSubstituteCoordinates_4",
-            "soil_moisture": "OrderedCompositor"
+            "soil_moisture": "Mask"
         }
     }
 }

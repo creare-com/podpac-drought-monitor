@@ -1,7 +1,7 @@
 var currentPage = 'map';
 var currentAxisType = 'ndmi';
 var nowdate = new Date();
-nowdate.setDate(nowdate.getDate() - 7);
+nowdate.setDate(nowdate.getDate() - 2);
 
 // First time run functions
 var geolocation = null;
@@ -44,10 +44,10 @@ PODPACcfg.lambda = new AWS.Lambda({
  
 
 // PODPAC Settings
-$.getJSON('json/settings.json', function(json) {
-    settings = json;
-    PODPACcfg.settings = settings;
-});
+// $.getJSON('json/settings.json', function(json) {
+//     settings = json;
+//     PODPACcfg.settings = settings;
+// });
 
 // APPLICATION JSON
 
@@ -60,11 +60,11 @@ $.getJSON('json/coords_template2.json', function(json) {
     get_data(geolocation, rawData);
 });
 
-$.getJSON('json/pipeline_category.json', function(json) {
+$.getJSON('json/pipeline_category_l3am.json', function(json) {
     pipeline_category = json;
     get_data(geolocation, rawData);
 })
-$.getJSON('json/pipeline_moisture.json', function(json) {
+$.getJSON('json/pipeline_moisture_l3am.json', function(json) {
     pipeline_moisture = json;
     get_data(geolocation, rawData);
 });
@@ -134,19 +134,17 @@ var baseMaps = {
 };
 var overlayMaps = {
     "SMAP VSM": SMAPSMWMS,
-    "SMAP DMI": SMAPWMS,
-    "NDMI": DroughtWMS
+    "NDMI": DroughtWMS,
+    "SMAP DMI": SMAPWMS
 };
 
 // Initial leaflet MAP
 var map = L.map('map', {
     center: [42, -100.0],
     zoom: 4,
-    layers: [OpenStreetMap_Mapnik]
+    layers: [OpenStreetMap_Mapnik],
 });
-L.control.layers(baseMaps, overlayMaps).addTo(map);
-// Set default layers
-map.addLayer(SMAPWMS);
+L.control.layers(baseMaps, overlayMaps,{collapsed:false}).addTo(map);
 
 // Set up listeners etc. to handle specification for the markers
 map.on('click', function(e) {
@@ -156,8 +154,23 @@ map.on('click', function(e) {
     $("#lat")[0].value = coords['lat'];
     $("#lon")[0].value = coords['lng'];
     updatePlot();
-    setPage('plot');
-})
+    updateMap();
+    // setPage('plot');
+});
+
+var loadingControl = L.Control.loading({
+    separate: true
+});
+map.addControl(loadingControl);
+
+SMAPWMS.on('loading', function(e) { loadingControl._showIndicator() });
+SMAPWMS.on('load', function(e) { loadingControl._hideIndicator() });
+SMAPSMWMS.on('loading', function(e) { loadingControl._showIndicator() });
+SMAPSMWMS.on('load', function(e) { loadingControl._hideIndicator() });
+
+// Set default layers
+map.addLayer(DroughtWMS);
+map.addLayer(SMAPWMS);
 
 // Update the map on first entry
 updateMap();
