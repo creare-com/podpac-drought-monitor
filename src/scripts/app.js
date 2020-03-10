@@ -146,6 +146,22 @@ var map = L.map('map', {
 });
 L.control.layers(baseMaps, overlayMaps,{collapsed:false}).addTo(map);
 
+// Initial daterangepicker
+$( 'input[name="daterange"]').click(function( event ) {
+  event.stopPropagation();
+});
+$('input[name="daterange"]').daterangepicker({
+  singleDatePicker: true,
+  showDropdowns: true,
+  startDate: nowdate,
+  minYear: 1985, // TODO: This should be the minDate of the data layers.
+  maxDate: moment()
+}, function(start, end, label) {
+  console.log("new date selected: " + start.toISOString());
+  nowdate = start; // start === end for singleDatePicker
+  updateMap();
+});
+
 // Set up listeners etc. to handle specification for the markers
 map.on('click', function(e) {
 
