@@ -172,7 +172,8 @@ $('input[name="daterange"]').daterangepicker({
 }, function(start, end, label) {
   console.log("new date selected: " + start.toISOString());
   nowdate = start; // start === end for singleDatePicker
-  queryDate.setDate(nowdate.getDate() - 2);
+  queryDate = nowdate;
+  queryDate.subtract(2, "days");
   updateLayers();
   updateMap();
 });
