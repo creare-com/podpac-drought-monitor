@@ -1,7 +1,8 @@
 var currentPage = 'map';
 var currentAxisType = 'ndmi';
 var nowdate = new Date();
-nowdate.setDate(nowdate.getDate() - 2);
+var queryDate = new Date();
+queryDate.setDate(queryDate.getDate() - 2);
 
 // First time run functions
 var geolocation = null;
@@ -114,7 +115,7 @@ var SMAPWMSOptions = {
   transparent: true,
   transparency: true,
   opacity: 0.95,
-  time: nowdate.toISOString(),
+  time: queryDate.toISOString(),
   format: 'image/png'
 };
 var SMAPWMS = L.tileLayer.wms("https://ps1dfpoecf.execute-api.us-east-1.amazonaws.com/prod/eval/?", SMAPWMSOptions);
@@ -124,7 +125,7 @@ var SMAPSMWMSOptions = {
   transparent: true,
   transparency: true,
   opacity: 0.95,
-  time: nowdate.toISOString(),
+  time: queryDate.toISOString(),
   format: 'image/png'
 };
 var SMAPSMWMS = L.tileLayer.wms("https://ps1dfpoecf.execute-api.us-east-1.amazonaws.com/prod/eval/?", SMAPSMWMSOptions);
@@ -153,7 +154,7 @@ L.control.layers(baseMaps, overlayMaps, {
 function updateLayers() {
   timeWmsLayers.forEach((layer, index) => {
     layer.setParams({
-      time: nowdate.toISOString()
+      time: queryDate.toISOString()
     });
   });
 }
@@ -171,6 +172,7 @@ $('input[name="daterange"]').daterangepicker({
 }, function(start, end, label) {
   console.log("new date selected: " + start.toISOString());
   nowdate = start; // start === end for singleDatePicker
+  queryDate.setDate(nowdate.getDate() - 2);
   updateLayers();
   updateMap();
 });
