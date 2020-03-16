@@ -129,6 +129,8 @@ var SMAPSMWMSOptions = {
 };
 var SMAPSMWMS = L.tileLayer.wms("https://ps1dfpoecf.execute-api.us-east-1.amazonaws.com/prod/eval/?", SMAPSMWMSOptions);
 
+var timeWmsLayers = [SMAPWMS, SMAPSMWMS];
+
 var baseMaps = {
   "OpenStreetMap": OpenStreetMap_Mapnik
 };
@@ -148,6 +150,14 @@ L.control.layers(baseMaps, overlayMaps, {
   collapsed: false
 }).addTo(map);
 
+function updateLayers() {
+  timeWmsLayers.forEach((layer, index) => {
+    layer.setParams({
+      time: nowdate.toISOString
+    });
+  });
+}
+
 // Initial daterangepicker
 $('input[name="daterange"]').click(function(event) {
   event.stopPropagation();
@@ -161,6 +171,7 @@ $('input[name="daterange"]').daterangepicker({
 }, function(start, end, label) {
   console.log("new date selected: " + start.toISOString());
   nowdate = start; // start === end for singleDatePicker
+  updateLayers();
   updateMap();
 });
 
