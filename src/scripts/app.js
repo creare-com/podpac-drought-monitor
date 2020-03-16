@@ -20,7 +20,7 @@ var pipeline_d1 = null;
 var pipeline_d2 = null;
 var pipeline_d3 = null;
 var pipeline_d4 = null;
-var test_pipeline = null
+var test_pipeline = null;
 
 var PODPACcfg = {
   params: {
@@ -34,7 +34,7 @@ var PODPACcfg = {
 };
 
 // Lambda Configuration
-AWS.config.region = 'us-east-1'
+AWS.config.region = 'us-east-1';
 AWS.config.credentials = new AWS.CognitoIdentityCredentials({
   IdentityPoolId: 'us-east-1:6d5095bc-b9b6-42a7-ae6e-03b74431d949',
 });
@@ -63,7 +63,7 @@ $.getJSON('json/coords_template2.json', function(json) {
 $.getJSON('json/pipeline_category_l3am.json', function(json) {
   pipeline_category = json;
   get_data(geolocation, rawData);
-})
+});
 $.getJSON('json/pipeline_moisture_l3am.json', function(json) {
   pipeline_moisture = json;
   get_data(geolocation, rawData);
@@ -180,8 +180,8 @@ map.on('click', function(e) {
 
   // set input based on geolocation
   var coords = e.latlng;
-  $("#lat")[0].value = coords['lat'];
-  $("#lon")[0].value = coords['lng'];
+  $("#lat")[0].value = coords.lat;
+  $("#lon")[0].value = coords.lng;
   updatePlot();
   updateMap();
   // setPage('plot');
@@ -193,16 +193,16 @@ var loadingControl = L.Control.loading({
 map.addControl(loadingControl);
 
 SMAPWMS.on('loading', function(e) {
-  loadingControl._showIndicator()
+  loadingControl._showIndicator();
 });
 SMAPWMS.on('load', function(e) {
-  loadingControl._hideIndicator()
+  loadingControl._hideIndicator();
 });
 SMAPSMWMS.on('loading', function(e) {
-  loadingControl._showIndicator()
+  loadingControl._showIndicator();
 });
 SMAPSMWMS.on('load', function(e) {
-  loadingControl._hideIndicator()
+  loadingControl._hideIndicator();
 });
 
 // Set default layers
