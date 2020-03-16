@@ -101,24 +101,17 @@ var OpenStreetMap_Stamen = L.tileLayer('http://a.tile.stamen.com/toner/{z}/{x}/{
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 });
 
-var DroughtWMSOptions;
-var DroughtWMS;
-var SMAPWMSOptions;
-var SMAPWMS;
-var SMAPSMWMSOptions;
-var SMAPSMWMS;
-
 function updateLayers() {
-  DroughtWMSOptions = {
+  var DroughtWMSOptions = {
     layers: "usdm_current",
     transparent: true,
     transparency: true,
     opacity: 0.95,
     format: 'image/png',
   };
-  DroughtWMS = L.tileLayer.wms("http://ndmc-001.unl.edu:8080/cgi-bin/mapserv.exe?map=/ms4w/apps/usdm/service/usdm_current_wms.map&", DroughtWMSOptions);
+  var DroughtWMS = L.tileLayer.wms("http://ndmc-001.unl.edu:8080/cgi-bin/mapserv.exe?map=/ms4w/apps/usdm/service/usdm_current_wms.map&", DroughtWMSOptions);
 
-  SMAPWMSOptions = {
+  var SMAPWMSOptions = {
     layers: "https://podpac-drought-monitor-s3.s3.amazonaws.com/pipeline_category.json",
     transparent: true,
     transparency: true,
@@ -126,9 +119,9 @@ function updateLayers() {
     time: nowdate.toISOString(),
     format: 'image/png'
   };
-  SMAPWMS = L.tileLayer.wms("https://ps1dfpoecf.execute-api.us-east-1.amazonaws.com/prod/eval/?", SMAPWMSOptions);
+  var SMAPWMS = L.tileLayer.wms("https://ps1dfpoecf.execute-api.us-east-1.amazonaws.com/prod/eval/?", SMAPWMSOptions);
 
-  SMAPSMWMSOptions = {
+  var SMAPSMWMSOptions = {
     layers: "https://podpac-drought-monitor-s3.s3.amazonaws.com/pipeline_moisture.json",
     transparent: true,
     transparency: true,
@@ -136,7 +129,7 @@ function updateLayers() {
     time: nowdate.toISOString(),
     format: 'image/png'
   };
-  SMAPSMWMS = L.tileLayer.wms("https://ps1dfpoecf.execute-api.us-east-1.amazonaws.com/prod/eval/?", SMAPSMWMSOptions);
+  var SMAPSMWMS = L.tileLayer.wms("https://ps1dfpoecf.execute-api.us-east-1.amazonaws.com/prod/eval/?", SMAPSMWMSOptions);
 }
 updateLayers();
 
