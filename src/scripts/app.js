@@ -153,7 +153,7 @@ L.control.layers(baseMaps, overlayMaps, {
 function updateLayers() {
   timeWmsLayers.forEach((layer, index) => {
     layer.setParams({
-      time: nowdate.toISOString
+      time: nowdate.toISOString()
     });
   });
 }
