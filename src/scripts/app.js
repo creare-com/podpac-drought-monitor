@@ -1,8 +1,16 @@
 var currentPage = 'map';
 var currentAxisType = 'ndmi';
-var nowdate = new Date();
-var queryDate = new Date();
-queryDate.setDate(queryDate.getDate() - 2);
+var nowdate = moment();
+var queryDate = moment();
+queryDate.subtract(2, "days");
+var ndmiDate = moment(nowdate);
+
+var ndmiDates = [];
+var currentNdmiDate = moment("2000-01-04");
+while(currentNdmiDate.isSameOrBefore(moment(nowdate), "day")) {
+  ndmiDates.push(currentNdmiDate.format("YYYYMMDD"));
+  currentNdmiDate.add(7, "days");
+}
 
 // First time run functions
 var geolocation = null;
@@ -157,6 +165,27 @@ function updateLayers() {
       time: queryDate.toISOString()
     });
   });
+
+  if (nowdate.isSame(ndmiDate, "day") || nowdate.isBetween(ndmiDate, moment(ndmiDate).add(7, "days"), "day")) {
+    // Don't want to query for data if it will be same date
+    return;
+  }
+
+  var ndmiQueryMoment = moment(nowdate);
+  for (var index = 0; index < 7; index++) {
+    var ndmiQueryString = ndmiQueryMoment.format("YYYYMMDD");
+    if (ndmiDates.includes(ndmiQueryString)) {
+      ndmiDate = moment(ndmiQueryMoment);
+      DroughtWMS.setParams({
+        layers: "usdm_" + ndmiQueryString
+      }, true); // Don't redraw yet, need to setUrl too.
+      var url = DroughtWMS._url.replace(/usdm_.*_wms/, "usdm_" + ndmiQueryString + "_wms");
+      DroughtWMS.setUrl(url);
+      return;
+    }
+    ndmiQueryMoment.subtract(1, "days");
+  }
+  console.log("ERROR: couldn't determine a valid date for NDMI data.");
 }
 
 // Initial daterangepicker
@@ -167,12 +196,12 @@ $('input[name="daterange"]').daterangepicker({
   singleDatePicker: true,
   showDropdowns: true,
   startDate: nowdate,
-  minYear: 1985, // TODO: This should be the minDate of the data layers.
+  minDate: moment("2000-01-04"), // First date NDMI data is available.
   maxDate: moment()
 }, function(start, end, label) {
   console.log("new date selected: " + start.toISOString());
-  nowdate = start; // start === end for singleDatePicker
-  queryDate = nowdate;
+  nowdate = moment(start); // start === end for singleDatePicker
+  queryDate = moment(nowdate);
   queryDate.subtract(2, "days");
   updateLayers();
   updateMap();
