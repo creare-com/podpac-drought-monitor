@@ -177,7 +177,7 @@ function updateLayers() {
     if (ndmiDates.includes(ndmiQueryString)) {
       ndmiDate = moment(ndmiQueryMoment);
       DroughtWMS.setParams({
-        layers: "usdm_" + ndmiQueryString
+        layers: "usdm" + ndmiQueryString
       }, true); // Don't redraw yet, need to setUrl too.
       var url = DroughtWMS._url.replace(/usdm_.*_wms/, "usdm_" + ndmiQueryString + "_wms");
       DroughtWMS.setUrl(url);
