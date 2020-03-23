@@ -62,7 +62,10 @@
                     </li>
                 </ul>
                 <!-- Inputs -->
-                <input type="text" name="daterange"/>
+                <form class="form-inline my-2 my-lg-0">
+                  <label for="daterange" class="p-2">Date</label>
+                  <input type="text" name="daterange" class="form-control mr-sm-2"/>
+                </form>
                 <form class="form-inline my-2 my-lg-0">
                     <label for="lat" class="p-2">Latitude</label>
                     <input name="lat" id="lat" class="form-control mr-sm-2" type="number" min="-90" max="90" onchange="updatePlot()" placeholder="Lat" aria-label="Latitude"/>
@@ -97,8 +100,8 @@
             <p>
                 This application is built using <a href="https://podpac.org">PODPAC</a>
                 .
-            
-            
+
+
             </p>
             <a href="https://podpac.org">
                 <img src="img/icon.png" class="podpac-logo"/>
@@ -106,9 +109,9 @@
             <p>
                 <a href="https://podpac.org">PODPAC</a>
                 is an open-source python library for observational data processing analysis and collaboration.
-            
-            
-            
+
+
+
             <p>
             <h4 class="mb-2 mt-2">FCC Attribution</h4>
             <p>This product uses the FCC Data API but is not endorsed or certified by the FCC.</p>
