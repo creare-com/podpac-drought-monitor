@@ -34,6 +34,10 @@
         <!-- Include the leaflet loading control -->
         <link rel="stylesheet" href="css/Control.Loading.css" />
         <script src="scripts/Control.Loading.js"></script>
+        <!-- Date picker widget -->
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
         <!-- Drought-Monitor scripts loaded after the <body> tag below -->
     </head>
     <body>
@@ -58,6 +62,7 @@
                     </li>
                 </ul>
                 <!-- Inputs -->
+                <input type="text" name="daterange"/>
                 <form class="form-inline my-2 my-lg-0">
                     <label for="lat" class="p-2">Latitude</label>
                     <input name="lat" id="lat" class="form-control mr-sm-2" type="number" min="-90" max="90" onchange="updatePlot()" placeholder="Lat" aria-label="Latitude"/>
