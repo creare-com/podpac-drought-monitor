@@ -119,6 +119,12 @@
         <!-- Legend -->
         <div id="legend">
             <div class="row collapse show" id="collapseExample"><ul class="legend-list">
+                <li class="map-legend">
+                  <strong id="ndmiDate"></strong>
+                </li>
+                <li class="map-legend">
+                  <strong id="smapDate"></strong>
+                </li>
                 <li>
                     <span class="dcatbox usdm-dnone"></span>
                     <strong>None</strong>
@@ -143,7 +149,7 @@
                     <span class="dcatbox usdm-d4"></span>
                     <strong>D4 (Exceptional Drought)</strong>
                 </li>
-                <li>
+                <li class="plot-legend">
                     <svg viewBox="0 0 40 20" xmlns="http://www.w3.org/2000/svg" class="dcatline">
                         <defs>
                             <!-- simple dot marker definition -->
@@ -156,7 +162,7 @@
                     </svg>
                     <strong>NDMI</strong>
                 </li>
-                <li>
+                <li class="plot-legend">
                     <svg viewBox="0 0 40 20" xmlns="http://www.w3.org/2000/svg" class="dcatline">
                         <defs>
                             <!-- simple dot marker definition -->
@@ -169,12 +175,12 @@
                     </svg>
                     <strong>SMAP DMI</strong>
                 </li>
-                <li>
+                <li class="map-legend">
                     <strong id="VSM-title"> Volumetric Soil Moisture (m³/m³) </strong><br>
                     <img src="img/gist_earth.png" id="gist-earth"><br>
                     <p style="float:left; margin-left: -1.2em;">0</p><p style="float:right">0.6</p>
                 </li>
-            </div></ul>
+            </ul></div>
             <div class="row justify-content-center"><h4>
                 <a class="btn btn-light" data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
                     Toggle Legend
