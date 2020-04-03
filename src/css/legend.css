@@ -12,7 +12,9 @@
     border: 1px solid black;
 }
 
-#VSM-title {
+#VSM-title,
+#ndmiDate,
+#smapDate {
     margin-left: -1em;
 }
 

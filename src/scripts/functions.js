@@ -3,7 +3,9 @@
 function setPage(toPage) {
     $(`#${currentPage}`).hide();
     $(`#${currentPage}link`).removeClass('active');
+    $(`.${currentPage}-legend`).hide();
     $(`#${toPage}`).show();
+    $(`.${toPage}-legend`).show();
     $(`#${toPage}link`).addClass('active');
     currentPage = toPage;
 
