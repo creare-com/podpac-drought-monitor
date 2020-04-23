@@ -1,9 +1,12 @@
-var currentPage = 'map';
+var currentPage = 'plot';
+var toPage = 'map';
 var currentAxisType = 'ndmi';
 var nowdate = moment();
 var queryDate = moment();
 queryDate.subtract(2, "days");
+$(`#smapDate`).text("SMAP Date: " + queryDate.format("MMM D, YYYY"));
 var ndmiDate = moment(nowdate);
+$(`#ndmiDate`).text("NDMI Date: " + ndmiDate.format("MMM D, YYYY"));
 
 var ndmiDates = [];
 var currentNdmiDate = moment("2000-01-04");
@@ -176,6 +179,7 @@ function updateLayers() {
     var ndmiQueryString = ndmiQueryMoment.format("YYYYMMDD");
     if (ndmiDates.includes(ndmiQueryString)) {
       ndmiDate = moment(ndmiQueryMoment);
+      $(`#ndmiDate`).text("NDMI Date: " + ndmiDate.format("MMM D, YYYY"));
       DroughtWMS.setParams({
         layers: "usdm" + ndmiQueryString
       }, true); // Don't redraw yet, need to setUrl too.
@@ -203,6 +207,7 @@ $('input[name="daterange"]').daterangepicker({
   nowdate = moment(start); // start === end for singleDatePicker
   queryDate = moment(nowdate);
   queryDate.subtract(2, "days");
+  $(`#smapDate`).text("SMAP Date: " + queryDate.format("MMM D, YYYY"));
   updateLayers();
   updateMap();
 });
@@ -243,4 +248,4 @@ map.addLayer(SMAPWMS);
 
 // Update the map on first entry
 updateMap();
-setPage(currentPage);
+setPage(toPage);
