@@ -130,6 +130,6 @@ out_f
 # In[ ]:
 
 
-d0 = cats.dataset['d0'][:, :, -128]
+d0 = out_f.dataset['d0'][:, :, -128]
 
 

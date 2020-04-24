@@ -113,8 +113,8 @@ function get_data(geolocation, rawData) {
         //                             rawData = addSMAPRawData(rawData, drought_category, "category");
         //                         }
         //                     });
-        getPODPACLambda(PODPACcfg, pipeline_category, coords, 'category', rawData.SMAP);
-        getPODPACLambda(PODPACcfg, pipeline_moisture, coords, 'moisture', rawData.SMAP);
+        getPODPACLambda(PODPACcfg, pipeline_category_time, coords, 'category', rawData.SMAP);
+        getPODPACLambda(PODPACcfg, pipeline_moisture_time, coords, 'moisture', rawData.SMAP);
         getPODPACLambda(PODPACcfg, pipeline_d0, coords, 'd0', rawData.SMAP);
         getPODPACLambda(PODPACcfg, pipeline_d1, coords, 'd1', rawData.SMAP);
         getPODPACLambda(PODPACcfg, pipeline_d2, coords, 'd2', rawData.SMAP);

@@ -8,6 +8,8 @@ import subprocess
 
 import boto3
 import botocore
+from multiprocessing.pool import ThreadPool
+
 
 from six import string_types
 
@@ -31,7 +33,7 @@ def handler(event, context, source=None):
         dependencies = os.environ["FUNCTION_DEPENDENCIES_KEY"]
     else:
         dependencies = "podpac_deps_{}.zip".format(
-            os.environ.get("PODPAC_VERSION", '1.2.0')
+            os.environ.get("PODPAC_VERSION", '2.0.0')
         )  # this should be equivalent to version.semver()
 
     # Download dependencies from specific bucket/object
@@ -65,8 +67,9 @@ def handler(event, context, source=None):
     
     bucket = "podpac-drought-monitor-s3"
     if source is None:
-        source = 's3://%s/%s' % (bucket, 'SMAP.zarr')
+        source = 's3://%s/%s' % (bucket, 'SMAP_CHUNKED32.zarr')
     
+    tmpzarr = '/tmp/UPD.zarr'    
 
     # AM/PM Data
     print("Opening L3 Zarr dataset.")
@@ -87,6 +90,36 @@ def handler(event, context, source=None):
     coords = smap_zarr.coordinates.drop('time')
     time = podpac.crange(smap_zarr.coordinates['time'].bounds[-1], str(datetime.date.today()), '1,D', 'time')
     coords = podpac.coordinates.merge_dims([coords, podpac.Coordinates([time], crs=coords.crs)]).transpose(*smap_zarr.dims)
+
+    # Create the local zarr file and download the relevant chunks
+    zf = zarr.open(tmpzarr, 'a')
+
+    for k in smap_zarr.available_data_keys:
+        zf.create_dataset(k, shape=smap_ds[k].shape, chunks=smap_ds[k].chunks, dtype=smap_ds[k].dtype, overwrite=True)
+    zf['time'] = smap_ds['time']
+    chunks = smap_ds[k].chunks
+    shape = smap_ds[k].shape
+    shape = shape[:2] + (smap_ds['time'].shape[0] + 1, )
+    parts = [[i for i in range(int(np.ceil(shape[ii] / chunks[ii])))] for ii in range(3)]
+    files = ['{}.{}.{}'.format(i, j, parts[2][-1]) for i in parts[0] for j in parts[1]]
+    files.append('.zarray') 
+
+    print ('Downloading chunks that need updating locally in a separate thread')
+    def download_files(src_root, dst_root, up=False):
+        for f in files:
+            for k in smap_zarr.available_data_keys:
+                src = '{}/{}/{}'.format(src_root, k, f)
+                dst = '{}/{}/{}'.format(dst_root, k, f)
+                if up:
+                    smap_zarr.s3.put(src, dst)
+                else:
+                    try:
+                        smap_zarr.s3.download(src, dst)
+                    except FileNotFoundError:
+                        pass
+   
+    up_pool = ThreadPool(1)
+    r_up = up_pool.apply_async(download_files, (smap_zarr.source, tmpzarr))
 
     print("Downloading the new L3 Data")
     count = 0
@@ -124,24 +157,48 @@ def handler(event, context, source=None):
 
         print(" ... Done.")
         new_times = c.coords['time'] 
+        print("Waiting for local chunks to download...", end='')
+        up_pool.close()
+        up_pool.join()
+        r_up.get()
+        print(" ... Done.")
+         
         for i, nt in enumerate(new_times):
             if np.any((smap_ds['time'][:] - nt).astype(int) >= 0) or np.all(l3_am[..., i] == -9999) or np.all(l3_pm[..., i] == -9999):
                 print('Time already exists, or is all nan -- skipping.')
                 continue
 
             print("Updating S3 Zarr file for L3 Data.")
-            old_time_shape = smap_ds['time'].shape
-            old_data_shape = smap_ds[smap_zarr.data_key].shape
+            old_time_shape = zf['time'].shape
+            old_data_shape = zf[smap_zarr.available_data_keys[0]].shape
+            expected_data_shape = old_data_shape[:2] + old_time_shape
+            
+            # Make sure the starting sizes are all the same
+            print ('Ensuring starting sizes are the same')
+            zf['time'].resize(*old_time_shape)
+            zf['Soil_Moisture_Retrieval_Data_AM/soil_moisture'].resize(*expected_data_shape)
+            zf['Soil_Moisture_Retrieval_Data_AM/retrieval_qual_flag'].resize(*expected_data_shape)
+            zf['Soil_Moisture_Retrieval_Data_PM/soil_moisture_pm'].resize(*expected_data_shape)
+            zf['Soil_Moisture_Retrieval_Data_PM/retrieval_qual_flag_pm'].resize(*expected_data_shape)            
 
             print ('Old Shape:', old_data_shape)
             try:
+                def f(key, data):
+                    zf[key].append(data, axis=2)
+                    return True
+                    
                 # Update the zarr file
                 ## IMPORTANT ONLY EXECUTE THIS CELL ONCE!!!! ANY ERRORS? DO NOT EXECUTE THE SAME APPEND AGAIN!
+                f('Soil_Moisture_Retrieval_Data_AM/soil_moisture', l3_am[..., i:i+1])
+                f('Soil_Moisture_Retrieval_Data_AM/retrieval_qual_flag', l3_am_qf[..., i:i+1])
+                f('Soil_Moisture_Retrieval_Data_PM/soil_moisture_pm', l3_pm[..., i:i+1])
+                f('Soil_Moisture_Retrieval_Data_PM/retrieval_qual_flag_pm', l3_pm_qf[..., i:i+1])
+                print("Uploading local chunks")
+                #files = os.path.listdir(tmpzarr)
+                download_files(tmpzarr, smap_zarr.source, True)
+                print("Updating time as final step")
                 smap_ds['time'].append(np.atleast_1d(nt))
-                smap_ds['Soil_Moisture_Retrieval_Data_AM/soil_moisture'].append(l3_am[..., i:i+1], axis=2)
-                smap_ds['Soil_Moisture_Retrieval_Data_AM/retrieval_qual_flag'].append(l3_am_qf[..., i:i+1], axis=2)
-                smap_ds['Soil_Moisture_Retrieval_Data_PM/soil_moisture_pm'].append(l3_pm[..., i:i+1], axis=2)
-                smap_ds['Soil_Moisture_Retrieval_Data_PM/retrieval_qual_flag_pm'].append(l3_pm_qf[..., i:i+1], axis=2)
+                zf['time'].append(np.atleast_1d(nt))
             except Exception as e:
                 print ('Updating L3 data failed:', e)
                 smap_ds['time'].resize(*old_time_shape)
@@ -150,8 +207,11 @@ def handler(event, context, source=None):
                 smap_ds['Soil_Moisture_Retrieval_Data_PM/soil_moisture_pm'].resize(*old_data_shape)
                 smap_ds['Soil_Moisture_Retrieval_Data_PM/retrieval_qual_flag_pm'].resize(*old_data_shape)
             print ('New Shape:', smap_ds['Soil_Moisture_Retrieval_Data_AM/soil_moisture'].shape)
+        break  # only do 1 loop
+        zarr.consolidate_metadata(smap_zarr._get_store())
+        print("Done!")
     return
 
-#if __name__ == '__main__':
-    #handler(None, None, source=r'C:\SMAP2.zarr')
-    #print('Done')
+if __name__ == '__main__':
+    handler(None, None)#, source=r'C:\SMAP2.zarr')
+    print('Done')
