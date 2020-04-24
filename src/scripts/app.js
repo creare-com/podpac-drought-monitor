@@ -25,8 +25,11 @@ var coords = null;
 var coords2 = null;
 
 // used to get categories for specific NDMI dates
-var pipeline_category = null;
-var pipeline_moisture = null;
+var pipeline_category_space = null;
+var pipeline_category_space_us = null;
+var pipeline_category_time = null;
+var pipeline_moisture_space = null;
+var pipeline_moisture_time = null;
 var pipeline_d0 = null;
 var pipeline_d1 = null;
 var pipeline_d2 = null;
@@ -34,9 +37,12 @@ var pipeline_d3 = null;
 var pipeline_d4 = null;
 var test_pipeline = null;
 
+// API URL
+var pipeline_api_url = 'https://e5nu2vek1a.execute-api.us-east-1.amazonaws.com/prod/eval/?';
+
 var PODPACcfg = {
   params: {
-    FunctionName: 'podpac-drought-monitor-lambda',
+    FunctionName: 'podpac-drought-monitor-lambda-world',
     //         InvocationType : 'Event',
     InvocationType: 'RequestResponse',
     LogType: 'None'
@@ -72,12 +78,24 @@ $.getJSON('json/coords_template2.json', function(json) {
   get_data(geolocation, rawData);
 });
 
-$.getJSON('json/pipeline_category_l3am.json', function(json) {
-  pipeline_category = json;
+$.getJSON('json/pipeline_category_space.json', function(json) {
+  pipeline_category_space = json;
   get_data(geolocation, rawData);
 });
-$.getJSON('json/pipeline_moisture_l3am.json', function(json) {
-  pipeline_moisture = json;
+$.getJSON('json/pipeline_category_space_us.json', function(json) {
+  pipeline_category_space_us = json;
+  get_data(geolocation, rawData);
+});
+$.getJSON('json/pipeline_category_time.json', function(json) {
+  pipeline_category_time = json;
+  get_data(geolocation, rawData);
+});
+$.getJSON('json/pipeline_moisture_space.json', function(json) {
+  pipeline_moisture_space = json;
+  get_data(geolocation, rawData);
+});
+$.getJSON('json/pipeline_moisture_time.json', function(json) {
+  pipeline_moisture_time = json;
   get_data(geolocation, rawData);
 });
 $.getJSON('json/pipeline_d0.json', function(json) {
@@ -122,34 +140,100 @@ var DroughtWMSOptions = {
 var DroughtWMS = L.tileLayer.wms("http://ndmc-001.unl.edu:8080/cgi-bin/mapserv.exe?map=/ms4w/apps/usdm/service/usdm_current_wms.map&", DroughtWMSOptions);
 
 var SMAPWMSOptions = {
-  layers: "https://podpac-drought-monitor-s3.s3.amazonaws.com/pipeline_category.json",
+  layers: "https://podpac-drought-monitor-s3.s3.amazonaws.com/pipeline_category_space.json",
   transparent: true,
   transparency: true,
   opacity: 0.95,
   time: queryDate.toISOString(),
   format: 'image/png'
 };
-var SMAPWMS = L.tileLayer.wms("https://ps1dfpoecf.execute-api.us-east-1.amazonaws.com/prod/eval/?", SMAPWMSOptions);
+var SMAPWMS = L.tileLayer.wms(pipeline_api_url, SMAPWMSOptions);
+
+var SMAPUSWMSOptions = {
+  layers: "https://podpac-drought-monitor-s3.s3.amazonaws.com/pipeline_category_space_us.json",
+  transparent: true,
+  transparency: true,
+  opacity: 0.95,
+  time: queryDate.toISOString(),
+  format: 'image/png'
+};
+var SMAPUSWMS = L.tileLayer.wms(pipeline_api_url, SMAPUSWMSOptions);
 
 var SMAPSMWMSOptions = {
-  layers: "https://podpac-drought-monitor-s3.s3.amazonaws.com/pipeline_moisture.json",
+  layers: "https://podpac-drought-monitor-s3.s3.amazonaws.com/pipeline_moisture_space.json",
   transparent: true,
   transparency: true,
   opacity: 0.95,
   time: queryDate.toISOString(),
   format: 'image/png'
 };
-var SMAPSMWMS = L.tileLayer.wms("https://ps1dfpoecf.execute-api.us-east-1.amazonaws.com/prod/eval/?", SMAPSMWMSOptions);
+var SMAPSMWMS = L.tileLayer.wms(pipeline_api_url, SMAPSMWMSOptions);
 
-var timeWmsLayers = [SMAPWMS, SMAPSMWMS];
+var SMAPD0WMSOptions = {
+  layers: "https://podpac-drought-monitor-s3.s3.amazonaws.com/pipeline_d0.json",
+  transparent: true,
+  transparency: true,
+  opacity: 0.95,
+  time: queryDate.toISOString(),
+  format: 'image/png'
+};
+var SMAPD0WMS = L.tileLayer.wms(pipeline_api_url, SMAPD0WMSOptions);
+
+var SMAPD1WMSOptions = {
+  layers: "https://podpac-drought-monitor-s3.s3.amazonaws.com/pipeline_d1.json",
+  transparent: true,
+  transparency: true,
+  opacity: 0.95,
+  time: queryDate.toISOString(),
+  format: 'image/png'
+};
+var SMAPD1WMS = L.tileLayer.wms(pipeline_api_url, SMAPD1WMSOptions);
+
+var SMAPD2WMSOptions = {
+  layers: "https://podpac-drought-monitor-s3.s3.amazonaws.com/pipeline_d2.json",
+  transparent: true,
+  transparency: true,
+  opacity: 0.95,
+  time: queryDate.toISOString(),
+  format: 'image/png'
+};
+var SMAPD2WMS = L.tileLayer.wms(pipeline_api_url, SMAPD2WMSOptions);
+
+var SMAPD3WMSOptions = {
+  layers: "https://podpac-drought-monitor-s3.s3.amazonaws.com/pipeline_d3.json",
+  transparent: true,
+  transparency: true,
+  opacity: 0.95,
+  time: queryDate.toISOString(),
+  format: 'image/png'
+};
+var SMAPD3WMS = L.tileLayer.wms(pipeline_api_url, SMAPD3WMSOptions);
+
+var SMAPD4WMSOptions = {
+  layers: "https://podpac-drought-monitor-s3.s3.amazonaws.com/pipeline_d4.json",
+  transparent: true,
+  transparency: true,
+  opacity: 0.95,
+  time: queryDate.toISOString(),
+  format: 'image/png'
+};
+var SMAPD4WMS = L.tileLayer.wms(pipeline_api_url, SMAPD4WMSOptions);
+
+var timeWmsLayers = [SMAPWMS, SMAPSMWMS, SMAPD0WMS, SMAPD1WMS, SMAPD2WMS, SMAPD3WMS, SMAPD4WMS];
 
 var baseMaps = {
   "OpenStreetMap": OpenStreetMap_Mapnik
 };
 var overlayMaps = {
-  "SMAP VSM": SMAPSMWMS,
+  "SMAP D0": SMAPD0WMS,
+  "SMAP D1": SMAPD1WMS,
+  "SMAP D2": SMAPD2WMS,
+  "SMAP D3": SMAPD3WMS,
+  "SMAP D4": SMAPD4WMS,
+  "SMAP Soil Moisture": SMAPSMWMS,
   "NDMI": DroughtWMS,
-  "SMAP DMI": SMAPWMS
+  "SMAP DMI World": SMAPWMS,
+  "SMAP DMI US": SMAPUSWMS
 };
 
 // Initial leaflet MAP
@@ -241,10 +325,39 @@ SMAPSMWMS.on('loading', function(e) {
 SMAPSMWMS.on('load', function(e) {
   loadingControl._hideIndicator();
 });
-
+SMAPD0WMS.on('loading', function(e) {
+  loadingControl._showIndicator();
+});
+SMAPD0WMS.on('load', function(e) {
+  loadingControl._hideIndicator();
+});
+SMAPD1WMS.on('loading', function(e) {
+  loadingControl._showIndicator();
+});
+SMAPD1WMS.on('load', function(e) {
+  loadingControl._hideIndicator();
+});
+SMAPD2WMS.on('loading', function(e) {
+  loadingControl._showIndicator();
+});
+SMAPD2WMS.on('load', function(e) {
+  loadingControl._hideIndicator();
+});
+SMAPD3WMS.on('loading', function(e) {
+  loadingControl._showIndicator();
+});
+SMAPD3WMS.on('load', function(e) {
+  loadingControl._hideIndicator();
+});
+SMAPD4WMS.on('loading', function(e) {
+  loadingControl._showIndicator();
+});
+SMAPD4WMS.on('load', function(e) {
+  loadingControl._hideIndicator();
+});
 // Set default layers
 map.addLayer(DroughtWMS);
-map.addLayer(SMAPWMS);
+map.addLayer(SMAPUSWMS);
 
 // Update the map on first entry
 updateMap();
