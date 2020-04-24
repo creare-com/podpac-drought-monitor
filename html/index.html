@@ -1,0 +1,232 @@
+<!DOCTYPE HTML>
+<!--
+	Horizons by TEMPLATED
+	templated.co @templatedco
+	Released for free under the Creative Commons Attribution 3.0 license (templated.co/license)
+-->
+<html>
+	<head>
+		<title>PODPAC SMAP Drought Monitor Application</title>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<meta name="description" content="" />
+		<meta name="keywords" content="" />
+		<!--[if lte IE 8]><script src="css/ie/html5shiv.js"></script><![endif]-->
+		<script src="js/jquery.min.js"></script>
+		<script src="js/jquery.dropotron.min.js"></script>
+		<script src="js/skel.min.js"></script>
+		<script src="js/skel-layers.min.js"></script>
+		<script src="js/init.js"></script>
+		<noscript>
+			<link rel="stylesheet" href="css/skel.css" />
+			<link rel="stylesheet" href="css/style.css" />
+		</noscript>
+		<!--[if lte IE 8]><link rel="stylesheet" href="css/ie/v8.css" /><![endif]-->
+	</head>
+	<body class="homepage">
+
+		<!-- Header -->
+			<div id="header">
+				<div class="container">
+						
+					<!-- Logo -->
+						<h1><a href="#" id="logo"><img src="https://podpac.org/_static/icon.svg"/></a></h1>
+					
+					<!-- Nav -->
+<!-- 						<nav id="nav">
+							<ul>
+								<li><a href="index.html">Home</a></li>
+<!-- 								<li>
+									<a href="">Dropdown</a>
+									<ul>
+										<li><a href="#">Lorem ipsum dolor</a></li>
+										<li><a href="#">Magna phasellus</a></li>
+										<li><a href="#">Etiam dolore nisl</a></li>
+										<li>
+											<a href="">Phasellus consequat</a>
+											<ul>
+												<li><a href="#">Lorem ipsum dolor</a></li>
+												<li><a href="#">Phasellus consequat</a></li>
+												<li><a href="#">Magna phasellus</a></li>
+												<li><a href="#">Etiam dolore nisl</a></li>
+												<li><a href="#">Veroeros feugiat</a></li>
+											</ul>
+										</li>
+										<li><a href="#">Veroeros feugiat</a></li>
+									</ul>
+								</li> 
+								<li><a href="US.html">US Drought Monitor</a></li>
+								<li><a href="world.html">World Drought Monitor</a></li>
+								<li><a href="research.html">Research Viewer</a></li>
+								<li><a href="http://podpac.org">PODPAC</a></li>
+							</ul>
+						</nav> -->
+
+
+					<!-- Banner -->
+						<div id="banner">
+							<div class="container">
+								<section>
+									<header class="major">
+										<h2>Hydrological Drought Monitoring with SMAP, PODPAC, and the Cloud</h2>
+										<span class="byline">&hellip; a technology demonstration for developing cloud-based serverless Geospatial applications to derive value-added products from earth science data.</span>
+									</header>
+									<a href="../src/us.html" class="button alt">United States</a> <a href="../src/world.html" class="button alt">World</a> <a href="https://podpac.org" class="button alt">PODPAC</a>
+								</section>			
+							</div>
+						</div>
+
+				</div>
+			</div>
+
+		<!-- Featured -->
+			<div class="wrapper style2">
+				<section class="container">
+					<header class="major">
+						<h2>What is it?</h2>
+						<span class="byline">This demonstration application implements a hydrological drought monitor based on the <a href="https://smap.jpl.nasa.gov/"> SMAP satellite</a> soil moisture sensor.
+						 The drought data on this site is computed <strong>on-demand</strong> from soil moisture data.</span>
+					</header>
+					<div class="row no-collapse-1">
+						<section class="4u" style="text-align:justify">
+							<a href="#" class="image feature"><img src="images/pic02.jpg" alt=""></a>
+							<p>We begin by staging historical SMAP Level 3 data in a cloud-optimized (<a href="https://zarr.readthedocs.io/">Zarr</a>) storage format. 
+							This is an important step to enable rapid computation and on-the-fly computation of drought categories. 
+							NASA is actively pursing cloud storage of their datasets, in which case this step would no longer be required.</p>
+						</section>
+						<section class="4u" style="text-align:justify">
+							<a href="#" class="image feature"><img src="images/pic03.jpg" alt=""></a>
+							<p>Next, we develop a PODPAC processing pipeline to compute Drought Categories based on historical soil moisture data. This pipeline:
+								(1) Normalizes the absolute SMAP soil moisture to relative soil moisture (in [0, 1]) by dividing the soil moisture by the porosity.
+  					            (2) For each day-of-the year, finds soil moisture data within a 45-day window (data spanning multiple years)
+						        (3) Fits a <a href="https://en.wikipedia.org/wiki/Beta_distribution"> Beta distribution</a> to the data to get a probability density function for that day-of-the-year.
+						        (4) Compute percentiles [0.3, 0.2, 0.1, 0.05, 0.02] representing drought severity categories.
+							</p>
+						</section>
+						<section class="4u" style="text-align:justify">
+							<a href="#" class="image feature"><img src="images/pic04.jpg" alt=""></a>
+							<p>Then, using PODPAC, we seamlessly transition our developed algorithm to execute on up to 1000 concurrent AWS Lambda functions, allowing the computation for the world within a few hours. 
+							Following this, we compute drought categories on-demand from the SMAP L3 soil moisture data and our computed categories to display the US and World maps.
+							</p>
+						</section>
+	
+					</div>
+				</section>
+			</div>
+
+		<!-- Main -->
+			<div id="main" class="wrapper style1">
+				<section class="container">
+					<header class="major">
+						<h2>How does it work?</h2>
+						<span class="byline">Explore the process, it's all open source!</span>
+					</header>
+					<div class="row">
+					
+						<!-- Content -->
+							<div class="6u">
+								<section>
+									<ul class="style">
+										<li>
+											<span class="fa fa-github"></span>
+											<h3>Explore <a href="https://github.com/creare-com/podpac-drought-monitor"> application code</a></h3>
+											<span>In particular, see Jupyter notebooks for <a href="https://github.com/creare-com/podpac-drought-monitor/blob/develop/notebooks/new/CalcDroughtCategoriesParallel.ipynb"> computing Drought Categories</a>,
+											 <a href="https://github.com/creare-com/podpac-drought-monitor/blob/develop/notebooks/new/Drought-Monitor-Pipeline.ipynb">setting up the PODPAC pipelines</a>, 
+											 and <a href="https://github.com/creare-com/podpac-drought-monitor/blob/develop/notebooks/MakeLambdaFunction.ipynb">creating the AWS resources</a>. </span>
+										</li>
+										<li>
+											<span class="fa fa-cloud"></span>
+											<h3>Explore geospatial datasets in the cloud</h3>
+											<span>See <a href="https://registry.opendata.aws/"> AWS's Open Data Registry</a>
+											and <a href="https://podpac.org/datasets.html">explore datasets using PODPAC</a></span>
+										</li>
+									</ul>
+								</section>
+							</div>
+							<div class="6u">
+								<section>
+									<ul class="style">
+										<li>
+											<span class="fa fa-cogs"></span>
+											<h3>Have an idea for your own Geospatial application?</h3>
+											<span>Get started using <a href="https://podpac.org">PODPAC</a>.</span>
+										</li>
+										<li>
+											<span class="fa fa-question"></span>
+											<h3>Need help getting started?</h3>
+											<span>Explore <a href="https://github.com/creare-com/podpac-examples/tree/master/notebooks"> other examples</a>. </span>
+										</li>
+									</ul>
+								</section>
+							</div>
+
+					</div>
+				</section>
+			</div>
+
+		<!-- Footer -->
+			<div id="footer">
+				<div class="container">
+
+					<!-- Lists -->
+						<div class="row">
+							<div class="8u">
+								<section>
+									<header class="major">
+										<h2>Contribution</h2>
+										<span class="byline">This material is based upon work supported by NASA under Contract No 80NSSC18C0061.</span>
+									</header>
+<!-- 									<div class="row">
+										<section class="6u">
+											<ul class="default">
+												<li><a href="#">Pellentesque elit non gravida blandit.</a></li>
+												<li><a href="#">Lorem ipsum dolor consectetuer elit.</a></li>
+												<li><a href="#">Phasellus nibh pellentesque congue.</a></li>
+												<li><a href="#">Cras vitae metus aliquam  pharetra.</a></li>
+											</ul>
+										</section>
+										<section class="6u">
+											<ul class="default">
+												<li><a href="#">Pellentesque elit non gravida blandit.</a></li>
+												<li><a href="#">Lorem ipsum dolor consectetuer elit.</a></li>
+												<li><a href="#">Phasellus nibh pellentesque congue.</a></li>
+												<li><a href="#">Cras vitae metus aliquam  pharetra.</a></li>
+											</ul>
+										</section>
+									</div> -->
+								</section>
+							</div>
+							<div class="4u">
+								<section>
+									<header class="major">
+										<h2><img src="https://weathercitizen.org/assets/images/creare-logo-white.svg" style="max-width: 10rem;"/></h2>
+<!-- 										<span class="byline">PODPAC is a project of Creare with support from NASA.</span> -->
+                                            <p><em>Copyright © Creare LLC, 2020. All Rights Reserved.</em></p>
+									</header>
+<!-- 									<ul class="contact">
+										<li>
+											<span class="address">Address</span>
+											<span>1234 Somewhere Road #4285 <br />Nashville, TN 00000</span>
+										</li>
+										<li>
+											<span class="mail">Mail</span>
+											<span><a href="#">someone@untitled.tld</a></span>
+										</li>
+										<li>
+											<span class="phone">Phone</span>
+											<span>(000) 000-0000</span>
+										</li>
+									</ul>	 -->
+								</section>
+							</div>
+						</div>
+
+					<!-- Copyright -->
+						<div class="copyright">
+							Design: <a href="http://templated.co">TEMPLATED</a> Images: <a href="http://unsplash.com">Unsplash</a> (<a href="http://unsplash.com/cc0">CC0</a>)
+						</div>
+
+				</div>
+			</div>
+
+	</body>
+</html>

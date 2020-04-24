@@ -224,6 +224,26 @@ var timeWmsLayers = [SMAPWMS, SMAPSMWMS, SMAPD0WMS, SMAPD1WMS, SMAPD2WMS, SMAPD3
 var baseMaps = {
   "OpenStreetMap": OpenStreetMap_Mapnik
 };
+var map = null;
+if (map_prefs==="us"){
+  var overlayMaps = {
+//   "SMAP D0": SMAPD0WMS,
+//   "SMAP D1": SMAPD1WMS,
+//   "SMAP D2": SMAPD2WMS,
+//   "SMAP D3": SMAPD3WMS,
+//   "SMAP D4": SMAPD4WMS,
+  "SMAP Soil Moisture": SMAPSMWMS,
+  "NDMI": DroughtWMS,
+//   "SMAP DMI World": SMAPWMS,
+  "SMAP DMI US": SMAPUSWMS
+  };
+  // Initial leaflet MAP
+  var map = L.map('map', {
+    center: [42, -100.0],
+    zoom: 4,
+    layers: [OpenStreetMap_Mapnik],
+  });
+} else {
 var overlayMaps = {
   "SMAP D0": SMAPD0WMS,
   "SMAP D1": SMAPD1WMS,
@@ -234,14 +254,15 @@ var overlayMaps = {
   "NDMI": DroughtWMS,
   "SMAP DMI World": SMAPWMS,
   "SMAP DMI US": SMAPUSWMS
-};
+  };
+  // Initial leaflet MAP
+  var map = L.map('map', {
+    center: [0, 0.0],
+    zoom: 2,
+    layers: [OpenStreetMap_Mapnik],
+  });
+}
 
-// Initial leaflet MAP
-var map = L.map('map', {
-  center: [42, -100.0],
-  zoom: 4,
-  layers: [OpenStreetMap_Mapnik],
-});
 L.control.layers(baseMaps, overlayMaps, {
   collapsed: false
 }).addTo(map);
@@ -319,6 +340,12 @@ SMAPWMS.on('loading', function(e) {
 SMAPWMS.on('load', function(e) {
   loadingControl._hideIndicator();
 });
+SMAPUSWMS.on('loading', function(e) {
+  loadingControl._showIndicator();
+});
+SMAPUSWMS.on('load', function(e) {
+  loadingControl._hideIndicator();
+});
 SMAPSMWMS.on('loading', function(e) {
   loadingControl._showIndicator();
 });
@@ -357,7 +384,11 @@ SMAPD4WMS.on('load', function(e) {
 });
 // Set default layers
 map.addLayer(DroughtWMS);
-map.addLayer(SMAPUSWMS);
+if (map_prefs==='us'){
+  map.addLayer(SMAPUSWMS);
+} else {
+  map.addLayer(SMAPWMS);
+}
 
 // Update the map on first entry
 updateMap();
