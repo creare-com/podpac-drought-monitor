@@ -94,7 +94,15 @@ def handler(event, context, source=None):
     # Create the local zarr file and download the relevant chunks
     zf = zarr.open(tmpzarr, 'a')
 
-    for k in smap_zarr.available_data_keys:
+    available_data_keys = [
+        'Soil_Moisture_Retrieval_Data_AM/soil_moisture',
+        'Soil_Moisture_Retrieval_Data_AM/retrieval_qual_flag',
+        'Soil_Moisture_Retrieval_Data_PM/soil_moisture_pm',
+        'Soil_Moisture_Retrieval_Data_PM/retrieval_qual_flag_pm',
+            ]
+
+
+    for k in available_data_keys:
         zf.create_dataset(k, shape=smap_ds[k].shape, chunks=smap_ds[k].chunks, dtype=smap_ds[k].dtype, overwrite=True)
     zf['time'] = smap_ds['time']
     chunks = smap_ds[k].chunks
@@ -107,7 +115,7 @@ def handler(event, context, source=None):
     print ('Downloading chunks that need updating locally in a separate thread')
     def download_files(src_root, dst_root, up=False):
         for f in files:
-            for k in smap_zarr.available_data_keys:
+            for k in available_data_keys:
                 src = '{}/{}/{}'.format(src_root, k, f)
                 dst = '{}/{}/{}'.format(dst_root, k, f)
                 if up:
@@ -170,7 +178,7 @@ def handler(event, context, source=None):
 
             print("Updating S3 Zarr file for L3 Data.")
             old_time_shape = zf['time'].shape
-            old_data_shape = zf[smap_zarr.available_data_keys[0]].shape
+            old_data_shape = zf[available_data_keys[0]].shape
             expected_data_shape = old_data_shape[:2] + old_time_shape
             
             # Make sure the starting sizes are all the same
@@ -181,7 +189,7 @@ def handler(event, context, source=None):
             zf['Soil_Moisture_Retrieval_Data_PM/soil_moisture_pm'].resize(*expected_data_shape)
             zf['Soil_Moisture_Retrieval_Data_PM/retrieval_qual_flag_pm'].resize(*expected_data_shape)            
 
-            print ('Old Shape:', old_data_shape)
+            print ('Old Shape:', expected_data_shape)
             try:
                 def f(key, data):
                     zf[key].append(data, axis=2)
@@ -202,10 +210,10 @@ def handler(event, context, source=None):
             except Exception as e:
                 print ('Updating L3 data failed:', e)
                 smap_ds['time'].resize(*old_time_shape)
-                smap_ds['Soil_Moisture_Retrieval_Data_AM/soil_moisture'].resize(*old_data_shape)
-                smap_ds['Soil_Moisture_Retrieval_Data_AM/retrieval_qual_flag'].resize(*old_data_shape)
-                smap_ds['Soil_Moisture_Retrieval_Data_PM/soil_moisture_pm'].resize(*old_data_shape)
-                smap_ds['Soil_Moisture_Retrieval_Data_PM/retrieval_qual_flag_pm'].resize(*old_data_shape)
+                smap_ds['Soil_Moisture_Retrieval_Data_AM/soil_moisture'].resize(*expected_data_shape)
+                smap_ds['Soil_Moisture_Retrieval_Data_AM/retrieval_qual_flag'].resize(*expected_data_shape)
+                smap_ds['Soil_Moisture_Retrieval_Data_PM/soil_moisture_pm'].resize(*expected_data_shape)
+                smap_ds['Soil_Moisture_Retrieval_Data_PM/retrieval_qual_flag_pm'].resize(*expected_data_shape)
             print ('New Shape:', smap_ds['Soil_Moisture_Retrieval_Data_AM/soil_moisture'].shape)
         break  # only do 1 loop
         zarr.consolidate_metadata(smap_zarr._get_store())

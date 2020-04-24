@@ -1,0 +1,72 @@
+{
+    "Zarr": {
+        "node": "core.data.zarr_source.Zarr",
+        "attrs": {
+            "alt_key": "alt",
+            "cf_calendar": null,
+            "cf_time": false,
+            "cf_units": null,
+            "crs": "epsg:4326",
+            "data_key": "Soil_Moisture_Retrieval_Data_AM/retrieval_qual_flag",
+            "interpolation": {
+                "method": "nearest",
+                "params": {
+                    "time_tolerance": "1,D"
+                }
+            },
+            "lat_key": "lat",
+            "lon_key": "lon",
+            "nan_vals": [
+                -9999
+            ],
+            "skip_validation": false,
+            "source": "s3://podpac-drought-monitor-s3/SMAP_CHUNKED32.zarr",
+            "time_key": "time"
+        },
+        "inputs": {
+            "boundary": {}
+        }
+    },
+    "Zarr_1": {
+        "node": "core.data.zarr_source.Zarr",
+        "attrs": {
+            "alt_key": "alt",
+            "cf_calendar": null,
+            "cf_time": false,
+            "cf_units": null,
+            "crs": "epsg:4326",
+            "data_key": "Soil_Moisture_Retrieval_Data_AM/soil_moisture",
+            "interpolation": {
+                "method": "nearest",
+                "params": {
+                    "time_tolerance": "1,D"
+                }
+            },
+            "lat_key": "lat",
+            "lon_key": "lon",
+            "nan_vals": [
+                -9999
+            ],
+            "skip_validation": false,
+            "source": "s3://podpac-drought-monitor-s3/SMAP_CHUNKED32.zarr",
+            "time_key": "time"
+        },
+        "inputs": {
+            "boundary": {}
+        }
+    },
+    "Mask": {
+        "node": "core.algorithm.generic.Mask",
+        "attrs": {
+            "bool_op": ">",
+            "bool_val": 1.0,
+            "in_place": true,
+            "masked_val": null
+        },
+        "inputs": {
+            "mask": "Zarr",
+            "source": "Zarr_1"
+        }
+    },
+    "podpac_version": "2.0.0+7.ga756a1f7"
+}
