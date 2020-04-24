@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Drought-Monitor</title>
+        <meta charset="utf-8"/>
+        <!-- ----------- -->
+        <!-- Stylesheets -->
+        <!-- ----------- -->
+        <!-- Leaflet -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin=""/>
+        <!-- Bootstrap -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+        <!-- Drought-Monitor -->
+        <link rel="stylesheet" href="index.css"/>
+        <!-- ---------- -->
+        <!-- Javascript -->
+        <!-- ---------- -->
+        <!-- Jquery -->
+        <script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
+        <!-- Bootstrap -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+        <!-- Plotting - Vega -->
+        <script src="https://cdn.jsdelivr.net/npm/vega@5.4.0/build/vega.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vega-lite@3.3.0/build/vega-lite.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vega-embed@4.2.0/build/vega-embed.js"></script>
+        <!-- MD5 Hash -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/spark-md5/3.0.0/spark-md5.min.js"></script>
+        <!-- AWS -->
+        <script src="https://sdk.amazonaws.com/js/aws-sdk-2.283.1.min.js"></script>
+        <!-- Leaflet -->
+        <!-- Note: Leafletjs MUST be loaded AFTER Leaflet's CSS -->
+        <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js" integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og==" crossorigin=""></script>
+        <!-- Include the leaflet loading control -->
+        <link rel="stylesheet" href="css/Control.Loading.css" />
+        <script src="scripts/Control.Loading.js"></script>
+        <!-- Date picker widget -->
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+        <!-- Drought-Monitor scripts loaded after the <body> tag below -->
+    </head>
+    <body>
+        <nav id="nav" class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
+            <!-- Add link here later -->
+            <a class="navbar-brand" href="../html/index.html">Drought-Monitor</a>
+            <!-- Collapsed -->
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarcollapsed" aria-controls="navbarcollapsed" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <!-- Navbar options -->
+            <div class="collapse navbar-collapse" id="navbarcollapsed">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a id="maplink" class="nav-link" onclick="setPage('map')">Current Map</a>
+                    </li>
+                    <li class="nav-item">
+                        <a id="plotlink" class="nav-link" onclick="setPage('plot')">Time Series</a>
+                    </li>
+                    <li class="nav-item">
+                        <a id="aboutlink" class="nav-link" onclick="setPage('about')">About</a>
+                    </li>
+                </ul>
+                <!-- Inputs -->
+                <form class="form-inline my-2 my-lg-0">
+                  <label for="daterange" class="p-2">Date</label>
+                  <input type="text" name="daterange" class="form-control mr-sm-2"/>
+                </form>
+                <form class="form-inline my-2 my-lg-0">
+                    <label for="lat" class="p-2">Latitude</label>
+                    <input name="lat" id="lat" class="form-control mr-sm-2" type="number" min="-90" max="90" onchange="updatePlot()" placeholder="Lat" aria-label="Latitude"/>
+                    <small class="form-text text-muted d-none d-md-block d-lg-none">WGS84</small>
+                </form>
+                <form class="form-inline my-2 my-lg-0">
+                    <label for="lon" class="p-2">Longitude</label>
+                    <input name="lon" id="lon" class="form-control mr-sm-2" type="number" min="-180" max="180" onchange="updatePlot()" placeholder="Lon" aria-label="Longitude"/>
+                    <small class="form-text text-muted">WGS84</small>
+                </form>
+            </div>
+        </nav>
+        <!-- Plot Page -->
+        <div id="plot" class="plot container mt-2">
+            <h2 class="mb-4 mt-2">Time Series</h2>
+            <div class="row">
+                <div class="col-2" style="max-width:fit-content;">
+                    <button id="ndmi-button" type="button" class="btn btn-outline-secondary btn-block active" onclick="updatePlot('ndmi')">NDMI</button>
+                </div>
+                <div class="col-2" style="max-width:fit-content;">
+                    <button id="sm-button" type="button" class="btn btn-outline-secondary btn-block" onclick="updatePlot('sm')">Soil Moisture</button>
+                </div>
+            </div>
+            <!-- plot container -->
+            <div id="vis" class="mt-4 vis-container"></div>
+        </div>
+        <!-- Map Page -->
+        <div id="map" class="map"></div>
+        <!-- About Page -->
+        <div id="about" class="about container">
+            <h2 class="mb-4 mt-4">About</h2>
+            <p>
+                This application is built using <a href="https://podpac.org">PODPAC</a>
+                .
+
+
+            </p>
+            <a href="https://podpac.org">
+                <img src="img/icon.png" class="podpac-logo"/>
+            </a>
+            <p>
+                <a href="https://podpac.org">PODPAC</a>
+                is an open-source python library for observational data processing analysis and collaboration.
+
+
+
+            <p>
+            <h4 class="mb-2 mt-2">FCC Attribution</h4>
+            <p>This product uses the FCC Data API but is not endorsed or certified by the FCC.</p>
+        </div>
+        <!-- Legend -->
+        <div id="legend">
+            <div class="row collapse show" id="collapseExample"><ul class="legend-list">
+                <li class="map-legend">
+                  <strong id="ndmiDate"></strong>
+                </li>
+                <li class="map-legend">
+                  <strong id="smapDate"></strong>
+                </li>
+                <li>
+                    <span class="dcatbox usdm-dnone"></span>
+                    <strong>None</strong>
+                </li>
+                <li>
+                    <span class="dcatbox usdm-d0"></span>
+                    <strong>D0 (Abnormally Dry)</strong>
+                </li>
+                <li>
+                    <span class="dcatbox usdm-d1"></span>
+                    <strong>D1 (Moderate Drought)</strong>
+                </li>
+                <li>
+                    <span class="dcatbox usdm-d2"></span>
+                    <strong>D2 (Severe Drought)</strong>
+                </li>
+                <li>
+                    <span class="dcatbox usdm-d3"></span>
+                    <strong>D3 (Extreme Drought)</strong>
+                </li>
+                <li>
+                    <span class="dcatbox usdm-d4"></span>
+                    <strong>D4 (Exceptional Drought)</strong>
+                </li>
+                <li class="plot-legend">
+                    <svg viewBox="0 0 40 20" xmlns="http://www.w3.org/2000/svg" class="dcatline">
+                        <defs>
+                            <!-- simple dot marker definition -->
+                            <marker id="dot" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="10" markerHeight="10">
+                                <circle cx="5" cy="5" r="5" fill="black"/>
+                            </marker>
+                        </defs>
+                        <!-- Data line with polymarkers -->
+                        <polyline points="0,10 20,10 40,10" fill="none" stroke="black" marker-mid="url(#dot)" stroke-dasharray="1 5" stroke-dashoffset="10"/>
+                    </svg>
+                    <strong>NDMI</strong>
+                </li>
+                <li class="plot-legend">
+                    <svg viewBox="0 0 40 20" xmlns="http://www.w3.org/2000/svg" class="dcatline">
+                        <defs>
+                            <!-- simple dot marker definition -->
+                            <marker id="square" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="10" markerHeight="10">
+                                <circle cx="5" cy="5" r="10" fill="#BB9999"/>
+                            </marker>
+                        </defs>
+                        <!-- Data line with polymarkers -->
+                        <polyline points="0,10 20,10 40,10" fill="none" stroke="#BB9999" marker-mid="url(#square)"/>
+                    </svg>
+                    <strong>SMAP DMI</strong>
+                </li>
+                <li class="map-legend">
+                    <strong id="VSM-title"> Volumetric Soil Moisture (m³/m³) </strong><br>
+                    <img src="img/gist_earth.png" id="gist-earth"><br>
+                    <p style="float:left; margin-left: -1.2em;">0</p><p style="float:right">0.6</p>
+                </li>
+            </ul></div>
+            <div class="row justify-content-center"><h4>
+                <a class="btn btn-light" data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+                    Toggle Legend
+                </a>
+            </h4></div>
+        </div>
+        <div id="message" class="message"></div>
+    </body>
+    <!-- Drought-Monitor -->
+    <!-- Note: These must be loaded here to have access to the DOM (above)-->
+    <script src="scripts/functions.js"></script>
+    <script>var map_prefs="world";</script>
+    <script src="scripts/app.js"></script>
+    <!-- <script src="index.js"></script> -->
+</html>
