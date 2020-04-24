@@ -57,69 +57,32 @@ def handler(event, context):
     from podpac.datalib import smap_egi
     
     
-    bucket = "podpac-internal-test"
-    source = 's3://%s/%s' % (bucket, 'SPL3SMP_E.002_9km_aid0001.zarr')
-    source2 = 's3://%s/%s' % (bucket, 'SPL4SMGP.004_9km_aid0001.zarr')
+    bucket = "podpac-drought-monitor-s3"
+    source = 's3://%s/%s' % (bucket, 'SMAP.zarr')
 
     kwargs = {'dims': ['time', 'lat', 'lon'], 'latkey': 'fakedim0', 'lonkey': 'fakedim1',
               'cf_time': True, 'cf_calendar': 'proleptic_gregorian', 'cf_units': 'days since 2000-01-01',
              'crs': 'epsg:6933', 'nan_vals': [-9999]}
 
-    print("Opening L4 Zarr dataset.")
-    smap_zarr_L4 = podpac.data.Zarr(source=source2, datakey='Geophysical_Data_sm_surface', file_mode='a', **kwargs)
-    smap_ds_L4 = smap_zarr_L4.dataset
-
-    print("Creating L4 Coordinates")
-    coords_l4 = smap_zarr_L4.native_coordinates.drop('time')
-    time = podpac.crange(smap_zarr_L4.native_coordinates['time'].bounds[-1], str(datetime.date.today()), '1,D', 'time')
-    coords_l4 = podpac.coordinates.merge_dims([podpac.Coordinates([time],  crs=coords_l4.crs), coords_l4])
-
-    # Get all the new data
-    # L4 data
-    print("Downloading the new L4 Data")
-    smap = smap_egi.SMAP(product='SPL4SMAU')
-    time_base = xr.coding.times.decode_cf_datetime(0, smap_ds_L4['time'].attrs['units'])
-    count = 0 
-    for c in coords_l4.iterchunks((1, ) + coords_l4.shape[1:]): 
-        count += 1
-        if count == 1: 
-            continue # start is already in dataset
-        print("Download L4 Data for:", str(c['time']), '...', end='')
-        try: 
-            l4 = smap.eval(c)
-        except ValueError as e:
-            print("No Granules available:", e)
-            continue
-        l4.set(-9999, podpac.UnitsDataArray(np.isnan(l4)))
-        print(" ... Done.")
-        new_times = (c.coords['time'].data - time_base).astype('timedelta64[D]')
-        for i, nt in enumerate(new_times):
-            if np.any((smap_ds_L4['time'][:] - nt).astype(int) >= 0) or np.all(l4[i] == -9999):
-                print('Time already exists, or is all nan -- skipping.')
-                continue
-            print("Updating S3 Zarr file for L4 Data.")
-            old_time_shape = smap_ds_L4['time'].shape
-            old_data_shape = smap_ds_L4['Geophysical_Data_sm_surface'].shape
-            print ('Old Shape:', old_data_shape)
-            try: 
-                smap_ds_L4['time'].append(np.atleast_1d(nt))
-                smap_ds_L4['Geophysical_Data_sm_surface'].append(l4[i:i+1], axis=0)
-            except Exception as e:
-                print ('Updating L4 data failed:', e)
-                smap_ds_L4['time'].resize(*old_time_shape)
-                smap_ds_L4['Geophysical_Data_sm_surface'].resize(*old_data_shape)
-            print ('New Shape:', smap_ds_L4['Geophysical_Data_sm_surface'].shape)
-        # if count >= 0: break  # uncomment to test L3 below
-    
     # AM/PM Data
     print("Opening L3 Zarr dataset.")
-    smap_zarr = podpac.data.Zarr(source=source, datakey='Soil_Moisture_Retrieval_Data_AM_soil_moisture', file_mode='a', **kwargs)
+    smap_zarr = podpac.data.Zarr(
+        source=source,
+        time_key='time',
+        data_key='Soil_Moisture_Retrieval_Data_AM/soil_moisture',
+        lat_key='lat',
+        lon_key='lon',
+        crs='EPSG:4326'
+        nan_vals=[-9999],
+        skip_validation=True,
+        file_mode='a'
+    )
     smap_ds = smap_zarr.dataset
 
     print("Creating L3 Coordinates")
     coords = smap_zarr.native_coordinates.drop('time')
     time = podpac.crange(smap_zarr.native_coordinates['time'].bounds[-1], str(datetime.date.today()), '1,D', 'time')
-    coords = podpac.coordinates.merge_dims([podpac.Coordinates([time], crs=coords.crs), coords])
+    coords = podpac.coordinates.merge_dims([coords, podpac.Coordinates([time], crs=coords.crs)]).transpose(smap_zarr.dims)
 
     print("Downloading the new L3 Data")
     time_base = xr.coding.times.decode_cf_datetime(0, smap_ds['time'].attrs['units'])
