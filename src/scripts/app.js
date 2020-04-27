@@ -219,7 +219,7 @@ var SMAPD4WMSOptions = {
 };
 var SMAPD4WMS = L.tileLayer.wms(pipeline_api_url, SMAPD4WMSOptions);
 
-var timeWmsLayers = [SMAPWMS, SMAPSMWMS, SMAPD0WMS, SMAPD1WMS, SMAPD2WMS, SMAPD3WMS, SMAPD4WMS];
+var timeWmsLayers = [SMAPWMS, SMAPUSWMS, SMAPSMWMS, SMAPD0WMS, SMAPD1WMS, SMAPD2WMS, SMAPD3WMS, SMAPD4WMS];
 
 var baseMaps = {
   "OpenStreetMap": OpenStreetMap_Mapnik
