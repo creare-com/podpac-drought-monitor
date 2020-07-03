@@ -97,8 +97,8 @@ def handler(event, context, source=None):
     available_data_keys = [
         'Soil_Moisture_Retrieval_Data_AM/soil_moisture',
         'Soil_Moisture_Retrieval_Data_AM/retrieval_qual_flag',
-        'Soil_Moisture_Retrieval_Data_PM/soil_moisture_pm',
-        'Soil_Moisture_Retrieval_Data_PM/retrieval_qual_flag_pm',
+#        'Soil_Moisture_Retrieval_Data_PM/soil_moisture_pm',
+#        'Soil_Moisture_Retrieval_Data_PM/retrieval_qual_flag_pm',
             ]
 
 
@@ -123,7 +123,7 @@ def handler(event, context, source=None):
                 else:
                     try:
                         smap_zarr.s3.download(src, dst)
-                    except FileNotFoundError:
+                    except trFileNotFoundError:
                         pass
    
     up_pool = ThreadPool(1)
@@ -146,13 +146,13 @@ def handler(event, context, source=None):
             l3_am_qf = smap.eval(c)
 
             # PM Data
-            print("PM", end=' ')
-            smap = smap_egi.SMAP(product='SPL3SMP_E_PM', check_quality_flags=False)
-            l3_pm = smap.eval(c)
-            smap.set_trait('data_key', smap.quality_flag_key)
-            smap.update_cache = True
-            print("PM_QF", end=' ')
-            l3_pm_qf = smap.eval(c)
+            # print("PM", end=' ')
+            # smap = smap_egi.SMAP(product='SPL3SMP_E_PM', check_quality_flags=False)
+            # l3_pm = smap.eval(c)
+            # smap.set_trait('data_key', smap.quality_flag_key)
+            # smap.update_cache = True
+            # print("PM_QF", end=' ')
+            # l3_pm_qf = smap.eval(c)
         except ValueError as e:
             print("No Granules available:", e)
             continue
@@ -160,8 +160,8 @@ def handler(event, context, source=None):
         # replace_nans
         l3_am.set(-9999, podpac.UnitsDataArray(np.isnan(l3_am)))
         l3_am_qf.set(-9999, podpac.UnitsDataArray(np.isnan(l3_am_qf)))
-        l3_pm.set(-9999, podpac.UnitsDataArray(np.isnan(l3_pm)))
-        l3_pm_qf.set(-9999, podpac.UnitsDataArray(np.isnan(l3_pm_qf)))
+        # l3_pm.set(-9999, podpac.UnitsDataArray(np.isnan(l3_pm)))
+        # l3_pm_qf.set(-9999, podpac.UnitsDataArray(np.isnan(l3_pm_qf)))
 
         print(" ... Done.")
         new_times = c.coords['time'] 
@@ -172,7 +172,7 @@ def handler(event, context, source=None):
         print(" ... Done.")
          
         for i, nt in enumerate(new_times):
-            if np.any((smap_ds['time'][:] - nt).astype(int) >= 0) or np.all(l3_am[..., i] == -9999) or np.all(l3_pm[..., i] == -9999):
+            if np.any((smap_ds['time'][:] - nt).astype(int) >= 0) or np.all(l3_am[..., i] == -9999): # or np.all(l3_pm[..., i] == -9999):
                 print('Time already exists, or is all nan -- skipping.')
                 continue
 
@@ -186,8 +186,8 @@ def handler(event, context, source=None):
             zf['time'].resize(*old_time_shape)
             zf['Soil_Moisture_Retrieval_Data_AM/soil_moisture'].resize(*expected_data_shape)
             zf['Soil_Moisture_Retrieval_Data_AM/retrieval_qual_flag'].resize(*expected_data_shape)
-            zf['Soil_Moisture_Retrieval_Data_PM/soil_moisture_pm'].resize(*expected_data_shape)
-            zf['Soil_Moisture_Retrieval_Data_PM/retrieval_qual_flag_pm'].resize(*expected_data_shape)            
+            # zf['Soil_Moisture_Retrieval_Data_PM/soil_moisture_pm'].resize(*expected_data_shape)
+            # zf['Soil_Moisture_Retrieval_Data_PM/retrieval_qual_flag_pm'].resize(*expected_data_shape)            
 
             print ('Old Shape:', expected_data_shape)
             try:
@@ -199,8 +199,8 @@ def handler(event, context, source=None):
                 ## IMPORTANT ONLY EXECUTE THIS CELL ONCE!!!! ANY ERRORS? DO NOT EXECUTE THE SAME APPEND AGAIN!
                 f('Soil_Moisture_Retrieval_Data_AM/soil_moisture', l3_am[..., i:i+1])
                 f('Soil_Moisture_Retrieval_Data_AM/retrieval_qual_flag', l3_am_qf[..., i:i+1])
-                f('Soil_Moisture_Retrieval_Data_PM/soil_moisture_pm', l3_pm[..., i:i+1])
-                f('Soil_Moisture_Retrieval_Data_PM/retrieval_qual_flag_pm', l3_pm_qf[..., i:i+1])
+                # f('Soil_Moisture_Retrieval_Data_PM/soil_moisture_pm', l3_pm[..., i:i+1])
+                # f('Soil_Moisture_Retrieval_Data_PM/retrieval_qual_flag_pm', l3_pm_qf[..., i:i+1])
                 print("Uploading local chunks")
                 #files = os.path.listdir(tmpzarr)
                 download_files(tmpzarr, smap_zarr.source, True)
@@ -212,12 +212,12 @@ def handler(event, context, source=None):
                 smap_ds['time'].resize(*old_time_shape)
                 smap_ds['Soil_Moisture_Retrieval_Data_AM/soil_moisture'].resize(*expected_data_shape)
                 smap_ds['Soil_Moisture_Retrieval_Data_AM/retrieval_qual_flag'].resize(*expected_data_shape)
-                smap_ds['Soil_Moisture_Retrieval_Data_PM/soil_moisture_pm'].resize(*expected_data_shape)
-                smap_ds['Soil_Moisture_Retrieval_Data_PM/retrieval_qual_flag_pm'].resize(*expected_data_shape)
+                # smap_ds['Soil_Moisture_Retrieval_Data_PM/soil_moisture_pm'].resize(*expected_data_shape)
+                # smap_ds['Soil_Moisture_Retrieval_Data_PM/retrieval_qual_flag_pm'].resize(*expected_data_shape)
             print ('New Shape:', smap_ds['Soil_Moisture_Retrieval_Data_AM/soil_moisture'].shape)
-        break  # only do 1 loop
         zarr.consolidate_metadata(smap_zarr._get_store())
         print("Done!")
+        # break  # only do 1 loop
     return
 
 if __name__ == '__main__':
