@@ -2,6 +2,10 @@
 
 Drought monitoring app built using [PODPAC](https://podpac.org).
 
+To see it in action, click on [Drought Monitor](https://creare-com.github.io/podpac-drought-monitor), or click on the image below.
+[![PODPAC Drought Monitor](DroughtMonitor.png)](https://creare-com.github.io/podpac-drought-monitor)
+
+
 
 ## Serve
 
